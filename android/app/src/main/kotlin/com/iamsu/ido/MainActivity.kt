@@ -1,4 +1,4 @@
-package com.example.i_do
+package com.iamsu.ido
 
 import io.flutter.embedding.android.FlutterActivity
 

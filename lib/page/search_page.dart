@@ -105,7 +105,7 @@ class _SearchPageState extends State<SearchPage> {
 
   // 标签选择器
   Widget _buildTagSelector() {
-    return _tagSelector(
+    return _buildSelectedTags(
       tags: tags, 
       onSelected: (selectedTags) {
         setState(() {
@@ -128,7 +128,7 @@ class _SearchPageState extends State<SearchPage> {
 
   // 标签黑名单选择器
   Widget _buildBlackTagSelector() {
-    return _tagSelector(
+    return _buildSelectedTags(
       tags: blackTags, 
       onSelected: (selectedTags) {
         setState(() {
@@ -149,7 +149,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _tagsEmpty({required void Function(List<String> selectedTags) onSelected, List<String> selectedTags = const []}) {
+  Widget _buildNoTagSelected({required void Function(List<String> selectedTags) onSelected, List<String> selectedTags = const []}) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -184,7 +184,7 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  Widget _tagSelector({
+  Widget _buildSelectedTags({
     required List<String> tags, 
     required void Function(List<String> selectedTags) onSelected,
     required void Function(String tag) onTap,
@@ -276,7 +276,7 @@ class _SearchPageState extends State<SearchPage> {
           child: Padding(
             padding: padding,
             child: tags.isEmpty 
-            ? _tagsEmpty(onSelected: onSelected, selectedTags: tags) 
+            ? _buildNoTagSelected(onSelected: onSelected, selectedTags: tags) 
             : ScrollSelectWrap<String>(
               isSelected: (item) => tags.contains(item),
               itemLabel: (item) => item,
@@ -622,7 +622,7 @@ class _SelectTagDialogState extends State<SelectTagDialog> {
     final filteredTags = widget.allTags.where((tag) => tag.toLowerCase().contains(searchText)).toList();
 
     if (filteredTags.isEmpty) {
-      return _buildTagEmpty();
+      return _buildNoTagFound();
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -671,7 +671,7 @@ class _SelectTagDialogState extends State<SelectTagDialog> {
     );
   }
 
-  Widget _buildTagEmpty() {
+  Widget _buildNoTagFound() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

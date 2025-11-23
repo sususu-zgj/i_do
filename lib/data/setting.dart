@@ -15,11 +15,6 @@ class Setting extends ChangeNotifier {
     ThemeMode.system,
   ];
 
-  static const List<FlexScheme> colorSchemes = [
-    FlexScheme.mandyRed,
-    FlexScheme.blackWhite,
-  ];
-
   static List<ThemeMode> get themeModes => List.of(_themeModes);
 
   late SettingData _data;
@@ -113,7 +108,7 @@ class SettingData {
   SettingData({
     required this.version,
     this.darkMode,
-    FlexScheme flexColorScheme = FlexScheme.mandyRed,
+    FlexScheme flexColorScheme = FlexScheme.flutterDash,
     required this.path,
     this.enableAnimations = true,
     this.savePop = true,
@@ -151,7 +146,7 @@ class SettingData {
 
   // 调色板名称
   final String _flexColorScheme;
-  FlexScheme get colorScheme => scheme[_flexColorScheme] ?? FlexScheme.mandyRed;
+  FlexScheme get colorScheme => scheme[_flexColorScheme] ?? FlexScheme.flutterDash;
 
   // 储存路径
   final String path;
@@ -188,7 +183,7 @@ class SettingData {
           : ( (map['darkMode'] as int) == 2
               ? null
               : (map['darkMode'] as int) == 1 ),
-      flexColorScheme: scheme[map['flexColorScheme'] as String? ?? 'mandyRed'] ?? FlexScheme.mandyRed,
+      flexColorScheme: scheme[map['flexColorScheme'] as String? ?? 'mandyRed'] ?? FlexScheme.flutterDash,
       path: map['path'] as String,
       enableAnimations: (map['enableAnimations'] as int?) == 1,
       savePop: (map['savePop'] as int?) == 1,

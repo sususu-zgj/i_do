@@ -18,13 +18,6 @@ class SettingPage extends StatelessWidget {
     FlexScheme.shadStone, 
   ];
 
-  // Widget buildPathTile() {
-  //   return ListTile(
-  //     title: Text('Database Path'),
-  //     subtitle: Text(Setting().path),
-  //   );
-  // }
-
   Widget buildThemeSchemeTile(BuildContext context) {
     final setting = context.watch<Setting>();
 

@@ -19,6 +19,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 电脑端使用 ffi 版 sqflite
   if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
@@ -28,6 +29,7 @@ void main() async {
   await Noter().load();
   await HomeData().load();
   Searcher().load(Noter().data);
+
   Noter().addListener(() {
     Searcher().search();
     debugPrint('Searcher updated from Noter changes.');
@@ -48,7 +50,6 @@ void main() async {
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
-  //static final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:i_do/data/note.dart';
 
+/// 用于 NoteEditPage 和其子 Widget 之间的数据共享。
 class EditData extends ChangeNotifier {
   EditData({this.note})
     : tags = List<String>.from(note?.tags ?? []),
@@ -10,7 +11,7 @@ class EditData extends ChangeNotifier {
 
   final List<String> tags;
 
-  final List<String> allTags ;
+  final List<String> allTags;
 
   void update() {
     notifyListeners();

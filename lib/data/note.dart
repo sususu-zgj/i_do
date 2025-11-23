@@ -5,12 +5,12 @@ import 'package:i_do/data/db.dart';
 
 class Note {
   ///
-  /// @param key 数据库主键，为空时无法进行除插入数据库以外的操作
-  /// @param title 标题
-  /// @param text 内容
-  /// @param tags 标签列表
-  /// @param dateTime 日期（仅年月日有效）
-  /// @param finish 是否完成
+  ///  [key] 数据库主键，为空时无法进行除插入数据库以外的操作
+  ///  [title] 标题
+  ///  [text] 内容
+  ///  [tags] 标签列表
+  ///  [date] 日期（仅年月日有效）
+  ///  [isFinished] 是否完成
   ///
   Note({
     this.key, 
@@ -18,7 +18,7 @@ class Note {
     this.text = '', 
     this.tags = const [], 
     required DateTime date, 
-    this.isiFinished = false
+    this.isFinished = false
   }) : _dateTime = DateTime(date.year, date.month, date.day);
 
   int? key;
@@ -26,11 +26,9 @@ class Note {
   String text;
   List<String> tags;
   DateTime _dateTime;
-  bool isiFinished;
+  bool isFinished;
 
-  ///
   /// 统一仅使用年月日
-  ///
   DateTime get dateTime => _dateTime;
   set dateTime(DateTime dateTime) => _dateTime = DateTime(dateTime.year, dateTime.month, dateTime.day);
 
@@ -41,7 +39,7 @@ class Note {
       'text': text,
       'tags': jsonEncode(tags),
       'dateTime': dateTime.millisecondsSinceEpoch,
-      'finish': isiFinished ? 1 : 0,
+      'finish': isFinished ? 1 : 0,
     };
   }
 
@@ -68,15 +66,14 @@ class Note {
       text: map['text'] as String? ?? '',
       tags: parsedTags,
       date: DateTime(dt.year, dt.month, dt.day),
-      isiFinished: (map['finish'] as int?) == 1,
+      isFinished: (map['finish'] as int?) == 1,
     );
   }
 }
 
+/// 管理 Note 的接口
 class Noter extends ChangeNotifier {
-  ///
   /// 单例
-  ///
   Noter._internal();
   factory Noter() => _instance;
   static final Noter _instance = Noter._internal();

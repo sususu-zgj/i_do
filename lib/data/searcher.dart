@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:i_do/data/note.dart';
 
 class Searcher extends ChangeNotifier {
-  ///
   /// 单例
-  ///
   static final Searcher _instance = Searcher._internal();
   factory Searcher() => _instance;
   Searcher._internal();

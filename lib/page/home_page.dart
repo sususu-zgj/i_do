@@ -6,10 +6,6 @@ import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:provider/provider.dart';
 
-///
-/// IAppBar - searchNote()
-///
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -104,13 +100,13 @@ class _HomePageState extends State<HomePage> {
               switch (value) {
                 case 0:
                   for (var note in selectedNotes) {
-                    note.isiFinished = true;
+                    note.isFinished = true;
                   }
                   Noter().updateNotes(selectedNotes, reclassify: false);
                   break;
                 case 1:
                   for (var note in selectedNotes) {
-                    note.isiFinished = false;
+                    note.isFinished = false;
                   }
                   Noter().updateNotes(selectedNotes, reclassify: false);
                   break;
@@ -140,28 +136,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    if (noter.notes.isEmpty) return _buildNoNoteExist();
+
     final showFinish = homeData.isFinishShown;
     final showUnfinish = homeData.isUnfinishShown;
 
+    // 筛选
     List<Note> notes = searcher.results.where((note) {
-      if (note.isiFinished && showFinish) return true;
-      if (!note.isiFinished && showUnfinish) return true;
+      if (note.isFinished && showFinish) return true;
+      if (!note.isFinished && showUnfinish) return true;
       return false;
     }).toList();
-
     switch (homeData.sortMode) {
       case HomeData.SORT_TITLE:
-        notes.sort((a, b) => a.title.compareTo(b.title) * (homeData.sortReverse ? -1 : 1));
+        notes.sort((a, b) => a.title.compareTo(b.title) * (homeData.isSortReverse ? -1 : 1));
       case HomeData.SORT_DATE:
-        notes.sort((a, b) => b.dateTime.compareTo(a.dateTime) * (homeData.sortReverse ? -1 : 1));
+        notes.sort((a, b) => b.dateTime.compareTo(a.dateTime) * (homeData.isSortReverse ? -1 : 1));
       case HomeData.SORT_DEFAULT:
-        if (homeData.sortReverse) {
+        if (homeData.isSortReverse) {
           notes = notes.reversed.toList();
         }
     }
 
     selectedNotes.removeWhere((note) => !notes.contains(note));
-    
+
+    if (notes.isEmpty) return _buildNoNoteFound();
+
     return ListView.builder(
       key: const PageStorageKey('home_note_list'),
       itemCount: notes.length,
@@ -182,6 +182,60 @@ class _HomePageState extends State<HomePage> {
           onFinish: () => _onNoteFinish(note),
         );
       },
+    );
+  }
+
+  Widget _buildNoNoteExist() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.note_alt_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No notes here ...',
+            style: TextStyle(
+              fontSize: 18,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try to create your first note',
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoNoteFound() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.note_alt_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No notes found',
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -278,7 +332,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onNoteFinish(Note note) {
-    note.isiFinished = !note.isiFinished;
+    note.isFinished = !note.isFinished;
     Noter().updateNote(note).then((value) {
       if(value && mounted) {
         setState(() {});
@@ -311,6 +365,7 @@ class _HDrawerState extends State<_HDrawer> {
     final colorScheme = Theme.of(context).colorScheme; 
     return Row(
       children: [
+        // Setting 页
         IconButton(
           color: colorScheme.primary,
           icon: const Icon(Icons.settings),
@@ -318,6 +373,7 @@ class _HDrawerState extends State<_HDrawer> {
             IDoAPI.openSettingPage(context);
           },
         ),
+        // 切换主题按钮
         IconButton(
           color: colorScheme.primary,
           onPressed: _switchTheme,
@@ -387,9 +443,9 @@ class _HDrawerState extends State<_HDrawer> {
         ),
         SwitchListTile(
           title: const Text('Reverse Sort Order'),
-          value: data.sortReverse,
+          value: data.isSortReverse,
           onChanged: (value) {
-            data.sortReverse = value;
+            data.isSortReverse = value;
           },
         ),
       ],
@@ -493,6 +549,7 @@ class _HAppbarState extends State<_HAppbar> {
         actionsPadding: const EdgeInsets.only(right: 8.0),
         actionsIconTheme: actionTheme,
         actions: [
+          // 创建 Note 按钮
           IDoAPI.buildASWidget(
           child: !data.isEditButtonFloating ? IconButton(
               onPressed: _createNote,
@@ -501,16 +558,19 @@ class _HAppbarState extends State<_HAppbar> {
               tooltip: 'Create Note',
             ) : const SizedBox.shrink(),
           ),
+          // 搜索按钮
           IconButton(
             onPressed: _searchNote,
             icon: Badge(
               label: Text(
                 '${itemCount < 1000 ? itemCount : '999'}',
               ),
+              backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.8),
               child: const Icon(Icons.search)
             ),
             tooltip: 'Search Note',
           ),
+          // 排序按钮
           PopupMenuButton<int>(
             icon: Icon(Icons.sort),
             onSelected: (value) => data.sortMode = value,
@@ -584,7 +644,7 @@ class _NoteListItem extends StatelessWidget {
           ),
         ),
         IDoAPI.buildASWidget(
-          child: note.isiFinished
+          child: note.isFinished
             ? toggleFinish && trailingShown 
               ? IconButton(key: const ValueKey('check'), onPressed: onFinish, icon: const Icon(Icons.check)) 
               : const Padding(
@@ -637,7 +697,7 @@ class _NoteListItem extends StatelessWidget {
           }
         },
         itemBuilder: (context) => [
-          note.isiFinished 
+          note.isFinished 
           ? const PopupMenuItem<int>(
             value: 1,
             child: Text('Unfinish'),

@@ -37,7 +37,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     if (_editData != null) return;
     _editData = context.watch<EditData>();
     _dateTime = note?.dateTime ?? DateTime.now();
-    _finish = note?.isiFinished ?? false;
+    _finish = note?.isFinished ?? false;
     _titleController = TextEditingController(text: note?.title ?? '');
     _textController = TextEditingController(text: note?.text ?? '');
   }
@@ -205,7 +205,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           text: _textController.text,
           tags: _tags,
           date: _dateTime,
-          isiFinished: _finish,
+          isFinished: _finish,
         );
         Noter().addNote(newNote).then((value) {if(value) Searcher().search();});
       }
@@ -214,7 +214,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
         note!.text = _textController.text;
         note!.tags = _tags;
         note!.dateTime = _dateTime;
-        note!.isiFinished = _finish;
+        note!.isFinished = _finish;
         Noter().updateNote(note!).then((value) {if(value) Searcher().search();});
       }
       
@@ -398,7 +398,7 @@ class _EDrawerState extends State<_EDrawer> {
   Widget _buildSelectedTags() {
     // Empty
     if (_tags.isEmpty) {
-      return _selectedTagsEmpty();
+      return _buildNoTagSelected();
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -471,7 +471,7 @@ class _EDrawerState extends State<_EDrawer> {
 
   Widget _buildAllTags() {
     if (_tagSource.isEmpty) {
-      return _tagSourceEmpty();
+      return _buildNoTagExist();
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -485,7 +485,7 @@ class _EDrawerState extends State<_EDrawer> {
         const SizedBox(height: 8),
         Expanded(
           child: _filteredTags.isEmpty
-          ? _tagSourceEmpty()
+          ? _buildNoTagExist()
           : MasonryGridView.count(
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 4.0,
@@ -585,7 +585,7 @@ class _EDrawerState extends State<_EDrawer> {
     ).toList();
   }
 
-  Widget _tagSourceEmpty() {
+  Widget _buildNoTagExist() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -614,7 +614,7 @@ class _EDrawerState extends State<_EDrawer> {
     );
   }
 
-  Widget _selectedTagsEmpty() {
+  Widget _buildNoTagSelected() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
