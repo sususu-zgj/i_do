@@ -241,35 +241,43 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: const _HAppbar(),
-      drawer: const _HDrawer(),
-      body: Stack(
-        children: [
-          IDoAPI.buildAnimatedPadding(
-            duration: const Duration(milliseconds: 300),
-            padding: isSelecting ? const EdgeInsets.only(top: 40) : EdgeInsets.zero,
-            child: _buildBody(),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 56,
-            child: IDoAPI.buildASWidget(
-              child: isSelecting ? IDoAPI.buildGlassWidget(child: _buildSelectBar()) : const SizedBox.shrink(),
-              transitionBuilder: (child, animation) => SizeTransition(
-                sizeFactor: animation,
-                axisAlignment: -1.0,
-                child: child,
+    return PopScope(
+      canPop: !isSelecting,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && isSelecting) {
+          setState(() {
+            isSelecting = false;
+            selectedNotes.clear();
+          });
+        }
+      },
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+        appBar: const _HAppbar(),
+        drawer: const _HDrawer(),
+        body: Stack(
+          children: [
+            IDoAPI.buildAnimatedPadding(
+              duration: const Duration(milliseconds: 300),
+              padding: isSelecting ? const EdgeInsets.only(top: 40) : EdgeInsets.zero,
+              child: _buildBody(),
+            ),
+            if (isSelecting)
+            SafeArea(
+              child: IDoAPI.buildASWidget(
+                child: IDoAPI.buildGlassWidget(child: _buildSelectBar()),
+                transitionBuilder: (child, animation) => SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1.0,
+                  child: child,
+                ),
               ),
             ),
-          ),
-
-        ],
+          ],
+        ),
+        floatingActionButton: isSelecting ? null : _buildFloatingActionButton(),
       ),
-      floatingActionButton: isSelecting ? null : _buildFloatingActionButton(),
     );
   }
 
