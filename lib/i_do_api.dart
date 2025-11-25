@@ -149,6 +149,44 @@ class IDoAPI {
     }
   }
 
+  static Widget buildAnimatedContainer({
+    required Widget child,
+    Duration duration = const Duration(milliseconds: 300),
+    Curve curve = Curves.easeInOut,
+    double? width,
+    double? height,
+    BoxDecoration? decoration,
+    EdgeInsetsGeometry? padding,
+    EdgeInsetsGeometry? margin,
+    AlignmentGeometry? alignment,
+  }) {
+    final animated = Setting().enableAnimations;
+
+    if (animated) {
+      return AnimatedContainer(
+        duration: duration,
+        curve: curve,
+        width: width,
+        height: height,
+        decoration: decoration,
+        padding: padding,
+        margin: margin,
+        alignment: alignment,
+        child: child,
+      );
+    } else {
+      return Container(
+        width: width,
+        height: height,
+        decoration: decoration,
+        padding: padding,
+        margin: margin,
+        alignment: alignment,
+        child: child,
+      );
+    }
+  }
+
 }
 
 class OverlaySnackBar extends StatefulWidget {

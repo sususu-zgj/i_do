@@ -35,6 +35,17 @@ class HomeData extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Note 显示的列数
+  int get columnsCount => _columnsCount;
+  set columnsCount(int value) {
+    if (value < 1) {
+      value = 1;
+    }
+    _columnsCount = value;
+    notifyListeners();
+  }
+
+
   /// 控制创建Note按钮的位置
   /// true - 浮动在右下角
   /// false - 固定在AppBar 
@@ -137,4 +148,5 @@ class HomeData extends ChangeNotifier {
   bool _isDateShown = false;
   bool _isTagShown = false;
   bool _isToggleFinish = false;
+  int _columnsCount = 1;
 }

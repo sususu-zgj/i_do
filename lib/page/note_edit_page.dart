@@ -6,6 +6,7 @@ import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
+import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:i_do/widgets/scroll_select_wrap.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -49,10 +50,10 @@ class _NoteEditPageState extends State<NoteEditPage> {
     super.dispose();
   }
   
-  AppBar _buildAppBar() {
+  PreferredSizeWidget _buildAppBar() {
     final borderColor = Theme.of(context).colorScheme.primary;
-    return AppBar(
-      elevation: IDoAPI.appBarElevation,
+
+    return BaseAppBar(
       title: const Text('Edit'),
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
@@ -222,7 +223,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
         context: context, 
         message: '$title saved',
       );
-      if (Setting().savePop) Navigator.of(context).pop();
+      if (note == null || Setting().savePop) Navigator.of(context).pop();
     }
     else {
       IDoAPI.showSnackBar(
@@ -508,7 +509,7 @@ class _EDrawerState extends State<_EDrawer> {
                           : null,
                     ),
                   ),
-                  trailing: isSelected
+                  trailing: isSelected && crossAxisCount == 1
                       ? Icon(Icons.check, color: onSelectedColor,)
                       : null,
                   onTap: () => _selectTag(tag),

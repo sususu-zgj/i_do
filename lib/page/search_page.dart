@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
+import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:i_do/widgets/scroll_select_wrap.dart';
 
 ///
@@ -55,8 +56,8 @@ class _SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
-  AppBar _appBar() {
-    return AppBar(
+  PreferredSizeWidget _appBar() {
+    return BaseAppBar(
       title: TextField(
         controller: _titleController,
         decoration: const InputDecoration(

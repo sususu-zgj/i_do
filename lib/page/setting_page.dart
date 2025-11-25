@@ -2,6 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
+import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:provider/provider.dart';
 
 class SettingPage extends StatelessWidget {
@@ -91,7 +92,7 @@ class SettingPage extends StatelessWidget {
     return PageStorage(
       bucket: _bucket,
       child: Scaffold(
-        appBar: AppBar(
+        appBar: BaseAppBar(
           title: Text('Setting'),
         ),
         body: ListView(

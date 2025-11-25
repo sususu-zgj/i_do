@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/page/note_edit_page.dart';
+import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:provider/provider.dart';
 
 class TagsPage extends StatefulWidget {
@@ -94,56 +96,19 @@ class _TagsPageState extends State<TagsPage> {
     }
   }
 
-  Future<void> _deleteTag(String tag) async {
-    final noter = Noter();
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Tag'),
-        content: Text(
-          'Are you sure you want to delete the tag "#$tag"?\n'
-          'This will remove this tag from all notes.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      final success = await noter.removeTag(tag);
-      if (success && mounted) {
-        IDoAPI.showSnackBar(
-          context: context,
-          message: 'Deleted tag "#$tag"',
-          duration: const Duration(milliseconds: 800),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
+      extendBodyBehindAppBar: true,
+      extendBody: true,
       body: _buildBody(),
       floatingActionButton: _isSelectionMode ? null : _buildFAB(),
     );
   }
 
   PreferredSizeWidget _buildAppBar() {
-    return AppBar(
+    return BaseAppBar(
       title: Text(_isSelectionMode ? '${_selectedTags.length} selected' : 'Manage Tags'),
       leading: _isSelectionMode
           ? IconButton(
@@ -169,37 +134,15 @@ class _TagsPageState extends State<TagsPage> {
   Widget _buildBody() {
     final noter = context.watch<Noter>();
     final tags = noter.tags;
+    
     if (tags.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.label_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No tags yet',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap + to create your first tag',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-            ),
-          ],
-        ),
-      );
+      return _buildNoTagExists();
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(8.0),
+    return MasonryGridView.count(
+      crossAxisCount: 6, 
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
       itemCount: tags.length,
       itemBuilder: (context, index) {
         final tag = tags[index];
@@ -210,36 +153,50 @@ class _TagsPageState extends State<TagsPage> {
           color: isSelected
               ? Theme.of(context).colorScheme.primaryContainer
               : null,
-          child: ListTile(
-            leading: _isSelectionMode
-                ? Checkbox(
-                    value: isSelected,
-                    onChanged: (_) => _toggleSelection(tag),
-                  )
-                : Icon(
-                    Icons.label,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            title: Text(
-              '#$tag',
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected 
-                    ? Theme.of(context).colorScheme.onPrimaryContainer
-                    : null,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: IDoAPI.buildAnimatedContainer(
+            decoration: BoxDecoration(
+              color: isSelected
+                ? Theme.of(context).colorScheme.primaryContainer
+                : null,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: InkWell(
+              customBorder: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              onTap: () => _toggleSelection(tag),
+              onLongPress: () => _toggleSelection(tag),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Transform.rotate(
+                      angle: 3.14 / 2,
+                      child: Icon(
+                        Icons.label_outline,
+                        size: 16,
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      tag.split('').join('\n'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected 
+                            ? Theme.of(context).colorScheme.onPrimaryContainer
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            trailing: _isSelectionMode
-                ? null
-                : IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                    onPressed: () => _deleteTag(tag),
-                  ),
-            onTap: () => _toggleSelection(tag),
-            onLongPress: () => _toggleSelection(tag),
           ),
         );
       },
@@ -251,6 +208,35 @@ class _TagsPageState extends State<TagsPage> {
       onPressed: _showCreateDialog,
       tooltip: 'Add tag',
       child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildNoTagExists() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.label_off,
+            size: 64,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No tags yet',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap + to create your first tag',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
