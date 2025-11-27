@@ -7,7 +7,7 @@ import 'package:i_do/data/home_data_.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/data/setting.dart';
-import 'package:i_do/page/home_page.dart';
+import 'package:i_do/page/splash_page.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -59,7 +59,7 @@ class MainApp extends StatelessWidget {
       theme:  FlexThemeData.light(scheme: setting.colorScheme),
       darkTheme:  FlexThemeData.dark(scheme: setting.colorScheme),
       themeMode: setting.themeMode,
-      home: const HomePage(),
+      home: const SplashPage(),
     );
   }
 }
