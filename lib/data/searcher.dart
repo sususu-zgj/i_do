@@ -14,8 +14,8 @@ class Searcher extends ChangeNotifier {
   int _year = -1;   // 搜索年份，非正数表示不筛选本级及下级日期，下同
   int _month = -1;    // 搜索月份
   int _day = -1;    // 搜索日期
-  bool _titleStrict = true;  // 标题严格模式
-  bool _tagStrict = true; // 标签严格模式，不影响blackTags的筛选结果
+  bool _titleStrict = false;  // 标题严格模式
+  bool _tagStrict = false; // 标签严格模式，不影响blackTags的筛选结果
 
   String get title => _title;
   List<String> get tags => _tags;

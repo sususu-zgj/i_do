@@ -6,8 +6,8 @@ import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
+import 'package:i_do/page/tag_create_dialog.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
-import 'package:i_do/widgets/scroll_select_wrap.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -234,95 +234,6 @@ class _NoteEditPageState extends State<NoteEditPage> {
   }
 }
 
-class TagCreateDialog extends StatefulWidget {
-  const TagCreateDialog({super.key, this.onCreate});
-
-  final void Function(List<String> tags)? onCreate;
-
-  @override
-  State<TagCreateDialog> createState() => _TagCreateDialogState();
-}
-
-class _TagCreateDialogState extends State<TagCreateDialog> {
-  List<String> _tags = [];
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Widget _textFieled() {
-    return TextField(
-      controller: _controller,
-      decoration: InputDecoration(
-        labelText: 'Tag name',
-        helperText: 'You can use "#" to separate multiple tags',
-        helperMaxLines: 2,
-        border: OutlineInputBorder()
-      ),
-      onChanged: (value) => setState(() {
-        final ts = value.split('#').where(
-          (tag) {
-            return tag.trim().isNotEmpty;
-          }
-        );
-        _tags = ts.map((tag) => tag.trim()).toSet().toList();
-      }),
-    );
-  }
-
-  Widget _content() {
-    return ScrollSelectWrap(
-      items: _tags,
-      isSelected: (_) => true,
-      itemLabel: (item) => item,
-      spacing: 8.0,
-      runSpacing: 8.0,
-      onSelected: (value) {
-        setState(() {
-          _tags.remove(value);
-          _controller.text = _tags.join('#');
-        });
-      },
-    );
-  }
-
-  List<Widget> _actions() {
-    return [
-      TextButton(
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-        child: Text('Cancel'),
-      ),
-      TextButton(
-        onPressed: () {
-          widget.onCreate?.call(_tags);
-          Navigator.of(context).pop();
-        },
-        child: Text('Create'),
-      ),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: _textFieled(),
-      content: _content(),
-      actions: _actions()
-    );
-  }
-}
-
 class _EDrawer extends StatefulWidget {
   @override
   State<_EDrawer> createState() => _EDrawerState();
@@ -333,7 +244,7 @@ class _EDrawerState extends State<_EDrawer> {
   Timer? _debounceTimer;
   TextEditingController? _searchController;
   int _selectedSegment = 0; // 0: 已选择, 1: 所有标签
-  int crossAxisCount = 2;
+  late final PageController _pageController;
 
   String get _searchQuery => _searchController?.text ?? '';
 
@@ -344,6 +255,7 @@ class _EDrawerState extends State<_EDrawer> {
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _pageController = PageController(initialPage: _selectedSegment);
   }
 
   @override
@@ -389,6 +301,7 @@ class _EDrawerState extends State<_EDrawer> {
           onSelectionChanged: (selection) {
             setState(() {
               _selectedSegment = selection.first;
+              _pageController.animateToPage(_selectedSegment, duration: const Duration(milliseconds: 300), curve: Curves.ease);
             });
           },
         ),
@@ -399,7 +312,7 @@ class _EDrawerState extends State<_EDrawer> {
   Widget _buildSelectedTags() {
     // Empty
     if (_tags.isEmpty) {
-      return _buildNoTagSelected();
+      return const _NoTagSelected();
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -457,14 +370,6 @@ class _EDrawerState extends State<_EDrawer> {
               },
             ),
           ),
-          IconButton(
-            icon: crossAxisCount == 1 ? const Icon(Icons.view_agenda) : const Icon(Icons.grid_view),
-            onPressed: () {
-              setState(() {
-                crossAxisCount = crossAxisCount == 1 ? 2 : 1;
-              });
-            },
-          )
         ],
       ),
     );
@@ -472,10 +377,11 @@ class _EDrawerState extends State<_EDrawer> {
 
   Widget _buildAllTags() {
     if (_tagSource.isEmpty) {
-      return _buildNoTagExist();
+      return const _NoTagExist();
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final shape = RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0),);
     final selectedColor = colorScheme.primary;
     final onSelectedColor = colorScheme.onPrimary;
@@ -486,32 +392,34 @@ class _EDrawerState extends State<_EDrawer> {
         const SizedBox(height: 8),
         Expanded(
           child: _filteredTags.isEmpty
-          ? _buildNoTagExist()
+          ? const _NoTagExist()
           : MasonryGridView.count(
-            crossAxisCount: crossAxisCount,
+            crossAxisCount: 2,
             mainAxisSpacing: 4.0,
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             itemCount: _filteredTags.length,
             itemBuilder: (context, index) {
               final tag = _filteredTags[index];
-              final isSelected = _tags.contains(tag);
+              final selected = _tags.contains(tag);
 
               return Card(
-                color: isSelected ? selectedColor : null,
-                elevation: isSelected ? 8 : 2,
-                shape: shape.copyWith(side: BorderSide(color: Colors.transparent, width: 1.2)),
+                color: selected ? selectedColor : colorScheme.surfaceBright,
+                elevation: selected ? 8 : 2,
+                shape: shape.copyWith(
+                  side: isDark ? BorderSide(
+                    color: selected ? colorScheme.primary : colorScheme.outline.withValues(alpha: 0.05),
+                    width: 1,
+                  ) : BorderSide.none,
+                ),
                 child: ListTile(
                   title: Text(
                     tag,
                     style: TextStyle(
-                      color: isSelected
+                      color: selected
                           ? onSelectedColor
                           : null,
                     ),
                   ),
-                  trailing: isSelected && crossAxisCount == 1
-                      ? Icon(Icons.check, color: onSelectedColor,)
-                      : null,
                   onTap: () => _selectTag(tag),
                   shape: shape,
                 ),
@@ -524,11 +432,17 @@ class _EDrawerState extends State<_EDrawer> {
   }
 
   Widget _buildContent() {
-    return Card(
-      elevation: IDoAPI.cardElevation,
-      child: _selectedSegment == 0
-        ? _buildSelectedTags()
-        : _buildAllTags(),
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (value) {
+        setState(() {
+          _selectedSegment = value;
+        });
+      },
+      children: [
+        _buildSelectedTags(),
+        _buildAllTags(),
+      ],
     );
   }
 
@@ -585,8 +499,14 @@ class _EDrawerState extends State<_EDrawer> {
       tag.toLowerCase().contains(_searchQuery.toLowerCase())
     ).toList();
   }
+}
 
-  Widget _buildNoTagExist() {
+class _NoTagExist extends StatelessWidget {
+  const _NoTagExist();
+
+  @override
+  Widget build(BuildContext context) {
+    Color color = Theme.of(context).colorScheme.outline;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -594,28 +514,35 @@ class _EDrawerState extends State<_EDrawer> {
           Icon(
             Icons.add_circle_outline,
             size: 64,
-            color: Theme.of(context).colorScheme.outline,
+            color: color,
           ),
           const SizedBox(height: 16),
           Text(
             'No tags available',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+              color: color,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Tap "Write" to create new tags',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+              color: color,
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildNoTagSelected() {
+class _NoTagSelected extends StatelessWidget {
+  const _NoTagSelected();
+
+  @override
+  Widget build(BuildContext context) {
+    Color color = Theme.of(context).colorScheme.outline;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -623,20 +550,20 @@ class _EDrawerState extends State<_EDrawer> {
           Icon(
             Icons.label_outline,
             size: 64,
-            color: Theme.of(context).colorScheme.outline,
+            color: color,
           ),
           const SizedBox(height: 16),
           Text(
             'No tags selected',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+              color: color,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Switch to "All" to select tags',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+              color: color,
             ),
           ),
         ],

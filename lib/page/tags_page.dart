@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
-import 'package:i_do/page/note_edit_page.dart';
+import 'package:i_do/page/tag_create_dialog.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:provider/provider.dart';
 

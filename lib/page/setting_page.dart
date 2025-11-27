@@ -1,107 +1,176 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:i_do/data/setting.dart';
-import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:provider/provider.dart';
 
-class SettingPage extends StatelessWidget {
+class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
   static final PageStorageBucket _bucket = PageStorageBucket();
 
-  static const List<FlexScheme> schemes= [
+  static const List<FlexScheme> schemes = [
     FlexScheme.flutterDash,
-    FlexScheme.blue, 
-    FlexScheme.green, 
-    FlexScheme.shadGreen, 
-    FlexScheme.mandyRed, 
-    FlexScheme.blackWhite, 
-    FlexScheme.shadStone, 
+    FlexScheme.blue,
+    FlexScheme.green,
+    FlexScheme.shadGreen,
+    FlexScheme.mandyRed,
+    FlexScheme.blackWhite,
+    FlexScheme.shadStone,
   ];
 
-  Widget buildThemeSchemeTile(BuildContext context) {
-    final setting = context.watch<Setting>();
+  @override
+  State<SettingPage> createState() => _SettingPageState();
+}
 
+class _SettingPageState extends State<SettingPage> {
+  late PageController _pageController;
+  Setting? _setting;
+
+  Setting get setting => _setting!;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _setting ??= context.watch<Setting>();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final initialIndex = SettingPage.schemes.indexOf(Setting().colorScheme);
+    _pageController = PageController(
+      initialPage: initialIndex < 0 ? 0 : initialIndex,
+      viewportFraction: 0.28,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildThemeColorTile(BuildContext context) {
     return ExpansionTile(
-      key: const PageStorageKey('theme_scheme'),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Theme Scheme'),
-          Text(
-            setting.colorScheme.name.capitalize,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-          )
-        ],
+      key: const PageStorageKey('theme_color_tile'),
+      title: Text('Theme Color'),
+      subtitle: Text(
+        setting.colorScheme.name.capitalize,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
-      children: schemes.map<Widget>((scheme) {
-        bool isSelected = setting.colorScheme == scheme;
+      children: [
+        _colorPicker()
+      ],
+    );
+  }
 
-        Widget trailing = isSelected ? const Icon(Icons.check) : const SizedBox.shrink();
+  Widget _colorPicker() {
+    final selectedIndex = SettingPage.schemes.indexOf(setting.colorScheme);
+    return Column(
+      children: [
+        SizedBox(
+          height: 100,
+          child: PageView.builder(
+            key: const PageStorageKey('color_scheme_picker'),
+            controller: _pageController,
+            itemCount: SettingPage.schemes.length,
+            physics: const BouncingScrollPhysics(),
+            onPageChanged: (index) {
+              setState(() {
+                setting.colorScheme = SettingPage.schemes[index];
+              });
+            },
+            itemBuilder: (context, index) {
+              final scheme = SettingPage.schemes[index];
+              final color = _getSchemeColor(scheme);
+              final isCenter = index == selectedIndex;
 
-        return ListTile(
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isSelected 
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline,
-                width: isSelected ? 3 : 1,
-              ),
-              color: _getSchemeColor(scheme),
-            ),
+              return Center( 
+                child: AnimatedScale(
+                  scale: isCenter ? 1.0 : 0.75,
+                  duration: const Duration(milliseconds: 250),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: SizedBox.square(
+                      dimension: 100,
+                      child: _ColorItem(
+                        size: 100,
+                        scheme: scheme,
+                        color: color,
+                        selected: isCenter,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-          title: Text(scheme.name.capitalize),
-          trailing: IDoAPI.buildASWidget(child: trailing),
-          selected: isSelected,
-          onTap: () {
-            setting.colorScheme = scheme;
-          },
-        );
-      }).toList(),
+        ),
+        const SizedBox(height: 8),
+        // 指示条
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(SettingPage.schemes.length, (i) {
+            final active = i == selectedIndex;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: active ? 22 : 10,
+              height: 8,
+              decoration: BoxDecoration(
+                color: active
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 
-  Widget buildAnimationTile(BuildContext context) {
+  Widget _buildAnimationTile(BuildContext context) {
     final setting = Setting();
     return SwitchListTile(
-      title: Text('Enable Animations'),
+      title: const Text('Enable Animations'),
       value: setting.enableAnimations == true,
-      onChanged: (value) {
-        setting.enableAnimations = value;
-      },
+      onChanged: (v) => setting.enableAnimations = v,
     );
   }
 
-  Widget buildSavePopTile(BuildContext context) {
+  Widget _buildSavePopTile(BuildContext context) {
     final setting = Setting();
     return SwitchListTile(
-      title: Text('Pop up after save note'),
+      title: const Text('Pop up after save note'),
       value: setting.savePop == true,
-      onChanged: (value) {
-        setting.savePop = value;
-      },
+      onChanged: (v) => setting.savePop = v,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return PageStorage(
-      bucket: _bucket,
+      bucket: SettingPage._bucket,
       child: Scaffold(
-        appBar: BaseAppBar(
-          title: Text('Setting'),
-        ),
+        appBar: const BaseAppBar(title: Text('Setting')),
         body: ListView(
           key: const PageStorageKey('settings'),
           children: [
-            // buildPathTile(),
-            buildThemeSchemeTile(context),
-            buildAnimationTile(context),
-            buildSavePopTile(context),
+            _buildThemeColorTile(context),
+            _buildAnimationTile(context),
+            _buildSavePopTile(context),
           ],
         ),
       ),
@@ -109,8 +178,60 @@ class SettingPage extends StatelessWidget {
   }
 
   Color _getSchemeColor(FlexScheme scheme) {
-    // 获取每个方案的主色调
     final schemeData = FlexColor.schemes[scheme];
     return schemeData?.light.primary ?? Colors.grey;
+  }
+}
+
+class _ColorItem extends StatelessWidget {
+  final FlexScheme scheme;
+  final Color color;
+  final bool selected;
+  final double size;
+
+  const _ColorItem({
+    required this.size,
+    required this.scheme,
+    required this.color,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+            width: selected ? 4 : 2,
+          ),
+          gradient: LinearGradient(
+            colors: [
+              color,
+              color.withValues(alpha: 0.7),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            scheme.name.capitalize,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  shadows: const [
+                    Shadow(color: Colors.black54, blurRadius: 4),
+                  ],
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
   }
 }

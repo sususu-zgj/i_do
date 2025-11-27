@@ -424,6 +424,17 @@ class _SearchPageState extends State<SearchPage> {
                       fontWeight: FontWeight.bold,
                     ),
               ),
+              TextButton(
+                onPressed: () {
+                  DateTime now = DateTime.now();
+                  setState(() {
+                    year = now.year;
+                    month = now.month;
+                    day = now.day;
+                  });
+                },
+                child: Text('Today'),
+              ) 
             ],
           ),
           if (year != -1 || month != -1 || day != -1)
@@ -556,7 +567,6 @@ class SelectTagDialog extends StatefulWidget {
 class _SelectTagDialogState extends State<SelectTagDialog> {
   late List<String> _tempSelectedTags;
   late TextEditingController _searchController;
-  int crossAxisCount = 1;
   Timer? _debounceTimer;
 
   @override
@@ -605,14 +615,6 @@ class _SelectTagDialogState extends State<SelectTagDialog> {
               },
             ),
           ),
-          IconButton(
-            icon: crossAxisCount == 1 ? Icon(Icons.view_agenda) : Icon(Icons.grid_view),
-            onPressed: () {
-              setState(() {
-                crossAxisCount = crossAxisCount == 1 ? 2 : 1;
-              });
-            },
-          )
         ],
       ),
     );
@@ -632,7 +634,7 @@ class _SelectTagDialogState extends State<SelectTagDialog> {
     final onSelectedColor = colorScheme.onPrimary;
 
     return MasonryGridView.count(
-      crossAxisCount: crossAxisCount,
+      crossAxisCount: 2,
       itemCount: filteredTags.length,
       mainAxisSpacing: 4.0,
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -653,9 +655,6 @@ class _SelectTagDialogState extends State<SelectTagDialog> {
                     : null,
               ),
             ),
-            trailing: isSelected
-                ? Icon(Icons.check, color: onSelectedColor,)
-                : null,
             onTap: () {
               setState(() {
                 if (isSelected) {
