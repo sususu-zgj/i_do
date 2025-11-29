@@ -75,6 +75,10 @@ class _HomeAppBarState extends State<HomeAppBar> {
               value: AppConfig.SORT_DATE,
               child: Text('Sort by Date'),
             ),
+            const PopupMenuItem<int>(
+              value: AppConfig.SORT_STARRED,
+              child: Text('Sort by Starred'),
+            ),
           ],
         ),
         IDoAPI.buildASWidget(

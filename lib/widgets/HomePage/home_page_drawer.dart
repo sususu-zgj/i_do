@@ -132,7 +132,9 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
         ],
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () {},
+      onTap: () {
+        IDoAPI.openStarredPage(context);
+      },
     );
   }
 

@@ -10,7 +10,6 @@ class NoteItem extends StatelessWidget {
     this.foregroundColor,
     this.elevation = 2.0,
     this.shape,
-    this.animated = false,
     required this.note,
     required this.selecting,
     required this.selected,
@@ -20,13 +19,13 @@ class NoteItem extends StatelessWidget {
     this.onLongPress,
     this.onDelete,
     this.onFinish,
+    this.onStar,
   });
 
   final Color? foregroundColor;
   final Color? backgroundColor;
   final double? elevation;
   final ShapeBorder? shape;
-  final bool animated;
 
   final Note note;
   final bool selecting;
@@ -38,12 +37,38 @@ class NoteItem extends StatelessWidget {
   final VoidCallback? onLongPress;
   final VoidCallback? onDelete;
   final VoidCallback? onFinish;
+  final VoidCallback? onStar;
 
-  Widget _bulidTitle() {
-    return Text(
-      note.title,
+  bool get vertical => AppConfig().columnsCount != 1;
+
+  Widget _bulidTitle(BuildContext context) {
+    List<InlineSpan> spans = [];
+    if (vertical) {
+      spans.add(
+        WidgetSpan(
+          child: IDoAPI.buildASWidget(
+            child: note.isFinished
+              ? const Icon(Icons.check, size: 20,)
+              : const SizedBox.shrink(),
+          ))
+        );
+    }
+    spans.add(
+      TextSpan(
+        text: note.title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: foregroundColor,
+        ),
+      ),
+    );
+
+    return RichText(
       overflow: TextOverflow.ellipsis,
       maxLines: AppConfig().columnsCount == 1 ? 1 : 3,
+      text: TextSpan(
+        children: spans,
+      ),
     );
   }
 
@@ -64,8 +89,6 @@ class NoteItem extends StatelessWidget {
   }
 
   Widget _buildSubTitle(BuildContext context) {
-    bool vertical = AppConfig().columnsCount != 1;
-
     final theme = Theme.of(context);
     final tagColor = theme.colorScheme.primary;
 
@@ -80,7 +103,13 @@ class NoteItem extends StatelessWidget {
     );
 
     // 间隔
-    vertical ? spans.add(const TextSpan(text: '\n')) : spans.add(const TextSpan(text: '   '));
+    if (vertical) {
+      spans.add(const TextSpan(text: '\n'));
+    }
+    else {
+      spans.add(const TextSpan(text: '   '));
+    }
+
 
     // 标签
     if ( note.tags.isNotEmpty) {
@@ -149,6 +178,8 @@ class NoteItem extends StatelessWidget {
             onSelect?.call(!(selected));
           case 3:
             onDelete?.call();
+          case 4:
+            onStar?.call();
         }
       },
       itemBuilder: (context) => [
@@ -169,6 +200,15 @@ class NoteItem extends StatelessWidget {
           value: 3,
           child: Text('Delete'),
         ),
+                note.isStarred 
+        ? const PopupMenuItem<int>(
+          value: 4,
+          child: Text('Unstar'),
+        )
+        : const PopupMenuItem<int>(
+          value: 4,
+          child: Text('Star'),
+        ),
       ],
     );
   }
@@ -177,7 +217,15 @@ class NoteItem extends StatelessWidget {
     return SizedBox(
       height: 40,
       width: 40,
-      child: Icon(Icons.star)
+      child: IDoAPI.buildASWidget(
+        child: selecting
+          ? note.isStarred
+            ? const Icon(Icons.star, color: Colors.amber, key: ValueKey('starred'),)
+            : const Icon(Icons.star_border, color: Colors.amber, key: ValueKey('unstarred'),)
+          : note.isStarred
+            ? IconButton(key: const ValueKey('starred'), onPressed: onStar, icon: const Icon(Icons.star, color: Colors.amber)) 
+            : IconButton(key: const ValueKey('unstarred'), onPressed: onStar, icon: const Icon(Icons.star_border, color: Colors.amber))
+      )
     );
   }
 
@@ -187,7 +235,7 @@ class NoteItem extends StatelessWidget {
         ListTile(
           title: Row(
             children: [
-              Expanded(child: _bulidTitle()),
+              Expanded(child: _bulidTitle(context)),
               _buildFinishIcon(),
               const SizedBox(width: 8),
             ],
@@ -214,7 +262,7 @@ class NoteItem extends StatelessWidget {
     return Stack(
       children: [
         ListTile(
-          title: _bulidTitle(),
+          title: _bulidTitle(context),
           subtitle: _buildSubTitle(context),
           onTap: onTap,
           onLongPress: onLongPress,
@@ -225,8 +273,7 @@ class NoteItem extends StatelessWidget {
           top: 0,
           child: Column(
             children: [
-              _buildFinishIcon(),
-              //_buildStar(),
+              _buildStar(),
               _buildOption(),
             ],
           ),
@@ -238,7 +285,6 @@ class NoteItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final columnCount = AppConfig().columnsCount;
-    bool vertical = columnCount != 1;
     
     return CardTheme(
       color: backgroundColor,
@@ -246,9 +292,9 @@ class NoteItem extends StatelessWidget {
       elevation: elevation,
       child: ListTileTheme(
         data: ListTileTheme.of(context).copyWith(
-        iconColor: foregroundColor,
-        shape: shape,
-        textColor: foregroundColor,
+          iconColor: foregroundColor,
+          shape: shape,
+          textColor: foregroundColor,
           isThreeLine: vertical,
           titleTextStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
@@ -257,8 +303,6 @@ class NoteItem extends StatelessWidget {
         ),
         child: Card(
           child: IDoAPI.buildAnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(8.0),

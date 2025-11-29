@@ -28,6 +28,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
 
   late DateTime _dateTime;
   late bool _finish;
+  late bool _starred;
 
   Note? get note => _editData!.note;
   List<String> get _tags => _editData!.tags;
@@ -39,6 +40,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     _editData = context.watch<EditData>();
     _dateTime = note?.dateTime ?? DateTime.now();
     _finish = note?.isFinished ?? false;
+    _starred = note?.isStarred ?? false;
     _titleController = TextEditingController(text: note?.title ?? '');
     _textController = TextEditingController(text: note?.text ?? '');
   }
@@ -84,6 +86,21 @@ class _NoteEditPageState extends State<NoteEditPage> {
             ],
           ) 
         ),
+        SizedBox(height: 24, child: VerticalDivider(width: 1, color: borderColor,)),
+        IconButton(
+          onPressed: () {
+            setState(() {
+              _starred = !_starred;
+            });
+          },
+          icon: IDoAPI.buildASWidget(
+            child: Icon(
+              _starred ? Icons.star : Icons.star_border,
+              key: _starred ? const ValueKey('Edit-Page-Starred') : const ValueKey('Edit-Page-Unstarred'),
+              color: Colors.amber,
+            ),
+          ),
+        )
       ],
     );
   }
@@ -207,6 +224,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           tags: _tags,
           date: _dateTime,
           isFinished: _finish,
+          isStarred: _starred,
         );
         Noter().addNote(newNote).then((value) {if(value) Searcher().search();});
       }
@@ -216,6 +234,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
         note!.tags = _tags;
         note!.dateTime = _dateTime;
         note!.isFinished = _finish;
+        note!.isStarred = _starred;
         Noter().updateNote(note!).then((value) {if(value) Searcher().search();});
       }
       

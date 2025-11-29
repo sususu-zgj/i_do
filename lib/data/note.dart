@@ -11,14 +11,15 @@ class Note {
   ///  [tags] 标签列表
   ///  [date] 日期（仅年月日有效）
   ///  [isFinished] 是否完成
-  ///
+  ///  [isStarred] 是否加标记为重要
   Note({
     this.key, 
     required this.title, 
     this.text = '', 
     this.tags = const [], 
     required DateTime date, 
-    this.isFinished = false
+    this.isFinished = false,
+    this.isStarred = false,
   }) : _dateTime = DateTime(date.year, date.month, date.day);
 
   int? key;
@@ -27,6 +28,7 @@ class Note {
   List<String> tags;
   DateTime _dateTime;
   bool isFinished;
+  bool isStarred;
 
   /// 统一仅使用年月日
   DateTime get dateTime => _dateTime;
@@ -40,6 +42,7 @@ class Note {
       'tags': jsonEncode(tags),
       'dateTime': dateTime.millisecondsSinceEpoch,
       'finish': isFinished ? 1 : 0,
+      'starred': isStarred ? 1 : 0,
     };
   }
 
@@ -67,6 +70,7 @@ class Note {
       tags: parsedTags,
       date: DateTime(dt.year, dt.month, dt.day),
       isFinished: (map['finish'] as int?) == 1,
+      isStarred: (map['starred'] as int?) == 1,
     );
   }
 }

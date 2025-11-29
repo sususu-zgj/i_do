@@ -23,6 +23,9 @@ class AppConfig extends ChangeNotifier {
   /// 日期排序
   static const int SORT_DATE = 2;
 
+  /// 
+  static const int SORT_STARRED = 3;
+
   static Future<File> get config async {
     return File(join( await IDoAPI.storagePath, 'config.yaml'));
   }
@@ -30,10 +33,7 @@ class AppConfig extends ChangeNotifier {
   /// 排序模式
   int get sortMode => _sortMode;
   set sortMode(int value) {
-    if (value < SORT_DEFAULT || value > SORT_DATE) {
-      return;
-    }
-    _sortMode = value;
+    _sortMode = value.clamp(SORT_DEFAULT, SORT_STARRED);
     update();
   }
 

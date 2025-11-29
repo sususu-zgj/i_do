@@ -8,6 +8,7 @@ import 'package:i_do/data/note.dart';
 import 'package:i_do/page/note_edit_page.dart';
 import 'package:i_do/page/search_page.dart';
 import 'package:i_do/page/setting_page.dart';
+import 'package:i_do/page/starred_page.dart';
 import 'package:i_do/page/tags_page.dart';
 import 'package:i_do/widgets/overlay_snack_bar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -101,6 +102,16 @@ class IDoAPI {
       ),
     );
   }  
+
+  static void openStarredPage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return const StarredPage();
+        },
+      ),
+    );
+  }
 
   static Widget buildGlassWidget({required Widget child, double blurSigma = 12}) {
     return ClipRect(

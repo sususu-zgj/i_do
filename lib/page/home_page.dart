@@ -108,6 +108,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   }
                   Noter().updateNotes(selectedNotes, reclassify: false);
                   break;
+                case 2:
+                  for (var note in selectedNotes) {
+                    note.isStarred = true;
+                  }
+                  Noter().updateNotes(selectedNotes, reclassify: false);
+                  break;
+                case 3:
+                  for (var note in selectedNotes) {
+                    note.isStarred = false;
+                  }
+                  Noter().updateNotes(selectedNotes, reclassify: false);
+                  break;
               }
             },
             itemBuilder: (context) => [
@@ -118,6 +130,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               const PopupMenuItem<int>(
                 value: 1,
                 child: Text('Unfinish'),
+              ),
+              const PopupMenuItem<int>(
+                value: 2,
+                child: Text('Star'),
+              ),
+              const PopupMenuItem<int>(
+                value: 3,
+                child: Text('Unstar'),
               ),
             ],
           ),
@@ -150,6 +170,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         notes.sort((a, b) => a.title.compareTo(b.title) * (homeData.isSortReverse ? -1 : 1));
       case AppConfig.SORT_DATE:
         notes.sort((a, b) => b.dateTime.compareTo(a.dateTime) * (homeData.isSortReverse ? -1 : 1));
+      case AppConfig.SORT_STARRED:
+        notes.sort((a, b) {
+          if (a.isStarred && !b.isStarred) return -1 * (homeData.isSortReverse ? -1 : 1);
+          if (!a.isStarred && b.isStarred) return 1 * (homeData.isSortReverse ? -1 : 1);
+          return 0;
+        });
       case AppConfig.SORT_DEFAULT:
         if (homeData.isSortReverse) {
           notes = notes.reversed.toList();
@@ -202,7 +228,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               width: 1,
             ) : BorderSide.none,
           );
-          final animated = Setting().enableAnimations;
       
           return NoteItem(
             note: note,
@@ -210,7 +235,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             foregroundColor: foregroundColor,
             elevation: elevation,
             shape: shape,
-            animated: animated,
             selecting: isSelecting,
             toggleFinish: homeData.isToggleFinish,
             selected: selected,
@@ -219,6 +243,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             onLongPress: () => _onNoteLongPress(note),
             onDelete: () => _onNoteDelete(note),
             onFinish: () => _onNoteFinish(note),
+            onStar: () => _onNoteStar(note),
           );
         },
       ),
@@ -399,6 +424,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }
       });
     }
+  }
+
+  void _onNoteStar(Note note) {
+    note.isStarred = !note.isStarred;
+    Noter().updateNote(note).then((value) {
+      if(value && mounted) {
+        setState(() {});
+      } 
+    });
   }
 }
 

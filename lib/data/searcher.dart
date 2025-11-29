@@ -100,7 +100,6 @@ class Searcher extends ChangeNotifier {
 
     if(from==null) {
       _results = rs;
-      debugPrint('Searched');
       notifyListeners();
     }
     

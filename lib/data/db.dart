@@ -13,7 +13,7 @@ class DB {
   static final DB _instance = DB._internal();
 
   // 数据库版本
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2;
 
   /// Note, Tag 等数据
   static const String _dbName = 'i_do.db';
@@ -36,6 +36,11 @@ class DB {
       onCreate: (db, version) async {
         await db.execute(_NoteDb.CREATE);
         await db.execute(_TagDb.CREATE);
+      },
+      onUpgrade: (db, oldVersion, newVersion) {
+        if (oldVersion < 2) {
+          db.execute('ALTER TABLE ${_NoteDb.table} ADD COLUMN starred INTEGER NOT NULL DEFAULT 0;');
+        }
       },
     );
     return _db!;
@@ -221,7 +226,8 @@ class _NoteDb {
       text TEXT,
       tags TEXT,
       dateTime INTEGER NOT NULL,
-      finish INTEGER NOT NULL
+      finish INTEGER NOT NULL,
+      starred INTEGER NOT NULL
     );
   ''';
 }
