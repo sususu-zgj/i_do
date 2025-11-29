@@ -20,6 +20,7 @@ class Note {
     required DateTime date, 
     this.isFinished = false,
     this.isStarred = false,
+    this.isDeleted = false,
   }) : _dateTime = DateTime(date.year, date.month, date.day);
 
   int? key;
@@ -29,6 +30,7 @@ class Note {
   DateTime _dateTime;
   bool isFinished;
   bool isStarred;
+  bool isDeleted;
 
   /// 统一仅使用年月日
   DateTime get dateTime => _dateTime;
@@ -43,6 +45,7 @@ class Note {
       'dateTime': dateTime.millisecondsSinceEpoch,
       'finish': isFinished ? 1 : 0,
       'starred': isStarred ? 1 : 0,
+      'deleted': isDeleted ? 1 : 0,
     };
   }
 
@@ -71,6 +74,7 @@ class Note {
       date: DateTime(dt.year, dt.month, dt.day),
       isFinished: (map['finish'] as int?) == 1,
       isStarred: (map['starred'] as int?) == 1,
+      isDeleted: (map['deleted'] as int?) == 1,
     );
   }
 }
@@ -126,6 +130,8 @@ class Noter extends ChangeNotifier {
   Future<void> addNotes(List<Note> notes) async {
     notes = notes.where((n) => !_noteData.containsNote(n)).toList();
 
+    if (notes.isEmpty) return;
+
     try {
       List<int> keys = await DB().insertNotes(notes);
       for (int i = 0; i < notes.length; i++) {
@@ -179,6 +185,8 @@ class Noter extends ChangeNotifier {
   Future<bool> updateNotes(List<Note> notes, {bool reclassify = true}) async {
     notes = notes.where((n) => n.key != null && _noteData.containsNote(n)).toList();
 
+    if (notes.isEmpty) return false;
+
     try {
       await DB().updateNotes(notes);
       
@@ -215,6 +223,8 @@ class Noter extends ChangeNotifier {
   Future<bool> removeNotes(List<Note> notes) async {
     notes = notes.where((n) => n.key != null && _noteData.containsNote(n)).toList();
 
+    if (notes.isEmpty) return false;
+
     try {
       await DB().removeNotes(notes);
       for (var note in notes) {
@@ -247,6 +257,8 @@ class Noter extends ChangeNotifier {
 
   Future<bool> addTags(List<String> tags) async {
     tags = tags.where((t) => !_noteData.tags.contains(t)).toList();
+
+    if (tags.isEmpty) return false;
 
     try {
       await DB().insertTags(tags);
@@ -282,6 +294,8 @@ class Noter extends ChangeNotifier {
 
   Future<bool> removeTags(List<String> tags) async {
     tags = tags.where((t) => _noteData.tags.contains(t)).toList();
+
+    if (tags.isEmpty) return false;
 
     try {
       await DB().removeTags(tags);

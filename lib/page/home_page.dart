@@ -9,6 +9,7 @@ import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/HomePage/home_app_bar.dart';
 import 'package:i_do/widgets/HomePage/home_page_drawer.dart';
 import 'package:i_do/widgets/HomePage/note_item.dart';
+import 'package:i_do/widgets/no_note_here.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -154,7 +155,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildBody() {
-    if (noter.notes.isEmpty) return const _NoNoteExist();
+    if (noter.notes.isEmpty) {
+      return const NoNoteHere(
+        icon: Icon(Icons.note_alt_outlined),
+        message: Column(
+          children: [
+            Text('No notes here ...',),
+            SizedBox(height: 8),
+            Text('Try to create your first note',),
+          ],
+        ),
+      );
+    }
 
     final showFinish = homeData.isFinishShown;
     final showUnfinish = homeData.isUnfinishShown;
@@ -184,7 +196,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
     selectedNotes.removeWhere((note) => !notes.contains(note));
 
-    if (notes.isEmpty) return const _NoNoteFound();
+    if (notes.isEmpty) {
+      return const NoNoteHere(
+        icon: Icon(Icons.search_off_outlined),
+        message: Text('No notes found.'),
+      );
+    }
 
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -359,7 +376,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _onNoteDelete(Note note) async {
     final del = await showDialog(context: context, 
       builder: (context) => AlertDialog(
-        title: Text('Are you want to delete "${note.title}"'),
+        title: Text('Are you want to move "${note.title}" to recycle bin?'),
         actions: [
           TextButton(
             onPressed: () {
@@ -377,10 +394,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
     );
     if (del==true) {
-      Noter().removeNote(note).then(
+      note.isDeleted = true;
+      Noter().updateNote(note).then(
         (value) {
           if (value && mounted) {
-            IDoAPI.showSnackBar(context: context, message: 'Delete ${note.title} success');
+            IDoAPI.showSnackBar(context: context, message: '${note.title} has been moved to recycle bin');
           }
         },
       );
@@ -399,7 +417,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void _onNotesDelete() async {
     final del = await showDialog(context: context, 
       builder: (context) => AlertDialog(
-        title: Text('Are you want to delete ${selectedNotes.length} notes?'),
+        title: Text('Are you want to move ${selectedNotes.length} notes to recycle bin?'),
         actions: [
           TextButton(
             onPressed: () {
@@ -417,10 +435,13 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
     );
     if (del == true) {
-      Noter().removeNotes(selectedNotes).then((value) {
+      for (var note in selectedNotes) {
+        note.isDeleted = true;
+      }
+      Noter().updateNotes(selectedNotes).then((value) {
         if (value) selectedNotes.clear();
         if (value && mounted) {
-          IDoAPI.showSnackBar(context: context, message: 'Delete ${selectedNotes.length} notes');
+          IDoAPI.showSnackBar(context: context, message: '${selectedNotes.length} notes have been moved to recycle bin');
         }
       });
     }
@@ -436,66 +457,3 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 }
 
-class _NoNoteFound extends StatelessWidget {
-  const _NoNoteFound();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.note_alt_outlined,
-            size: 80,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No notes found',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _NoNoteExist extends StatelessWidget {
-  const _NoNoteExist();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.note_alt_outlined,
-            size: 80,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No notes here ...',
-            style: TextStyle(
-              fontSize: 18,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try to create your first note',
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

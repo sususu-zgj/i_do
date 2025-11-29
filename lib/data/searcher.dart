@@ -58,6 +58,8 @@ class Searcher extends ChangeNotifier {
     _tagStrict = tagStrict ?? _tagStrict;
 
     final rs = (from ?? _noteData.notes).where((note) {
+      if (note.isDeleted) return false;
+
       /// 标签黑名单
       /// 包含任意一项会被排除
       if (_blackTags.any((tag) => note.tags.contains(tag))) {

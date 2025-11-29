@@ -6,6 +6,7 @@ import 'package:i_do/data/config.dart';
 import 'package:i_do/data/edit_data.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/page/note_edit_page.dart';
+import 'package:i_do/page/recycle_page.dart';
 import 'package:i_do/page/search_page.dart';
 import 'package:i_do/page/setting_page.dart';
 import 'package:i_do/page/starred_page.dart';
@@ -108,6 +109,16 @@ class IDoAPI {
       MaterialPageRoute(
         builder: (context) {
           return const StarredPage();
+        },
+      ),
+    );
+  }
+
+  static void openRecyclePage(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) {
+          return const RecyclePage();
         },
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/no_note_here.dart';
 import 'package:provider/provider.dart';
 
 class StarredPage extends StatefulWidget {
@@ -23,8 +24,9 @@ class _StarredPageState extends State<StarredPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_noter != null) return;
-    notes = context.watch<Noter>().notes.where((note) => note.isStarred).toList();
-    _noter ??= context.read<Noter>();
+    _noter ??= context.watch<Noter>();
+    notes = noter.notes.where((note) => note.isStarred).toList();
+    
   }
 
   PreferredSizeWidget _buildAppBar() {
@@ -61,44 +63,50 @@ class _StarredPageState extends State<StarredPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return ListView.builder(
-        itemCount: notes.length,
-        itemBuilder: (context, index) {
-          final note = notes[index];
-          final selected = selectedNotes.contains(note);
-          final backgroundColor = selected ? colorScheme.primaryContainer : null;
-          final foregroundColor = selected ? colorScheme.onPrimaryContainer : null;
-          final elevation = selected ? 6.0 : 2.0;
-          final shape = RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            side: isDark ? BorderSide(
-              color: selected ? colorScheme.primaryContainer : colorScheme.outline.withValues(alpha: 0.05),
-              width: 1,
-            ) : BorderSide.none,
-          );
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        final selected = selectedNotes.contains(note);
+        final backgroundColor = selected ? colorScheme.primaryContainer : null;
+        final foregroundColor = selected ? colorScheme.onPrimaryContainer : null;
+        final elevation = selected ? 6.0 : 2.0;
+        final shape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          side: isDark ? BorderSide(
+            color: selected ? colorScheme.primaryContainer : colorScheme.outline.withValues(alpha: 0.05),
+            width: 1,
+          ) : BorderSide.none,
+        );
 
-          return _StarredItem(
-            note: note,
-            selecting: selecting,
-            selected: selected,
-            backgroundColor: backgroundColor,
-            foregroundColor: foregroundColor,
-            shape: shape,
-            elevation: elevation,
-            iconColor: Colors.amber,
-            onTap: () => _onTap(note),
-            onLongPress: () => _onLongPress(note),
-            onStar: () => _onStar(note),
-          );
-        },
-      );
+        return _StarredItem(
+          note: note,
+          selecting: selecting,
+          selected: selected,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          shape: shape,
+          elevation: elevation,
+          iconColor: Colors.amber,
+          onTap: () => _onTap(note),
+          onLongPress: () => _onLongPress(note),
+          onStar: () => _onStar(note),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: _buildAppBar(),
-      body: _buildBody(),
+      body: selectedNotes.isEmpty 
+          ? const NoNoteHere(
+            icon: Icon(Icons.star_border_outlined),
+            message: Text('No Starred Notes Yet'),
+          ) 
+          : _buildBody(),
     );
   }
 

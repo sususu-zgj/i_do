@@ -42,6 +42,13 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
           icon: _buildThemeIcon(),
           tooltip: 'Switch Theme',
         ),
+        IconButton(
+          color: colorScheme.primary,
+          onPressed: () {
+            IDoAPI.openRecyclePage(context);
+          },
+          icon: Icon(Icons.delete),
+        )
       ],
     );
   }
