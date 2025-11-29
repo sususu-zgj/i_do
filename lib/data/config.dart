@@ -204,6 +204,8 @@ class Setting extends ChangeNotifier {
     return File(join(await IDoAPI.storagePath, 'config.yaml'));
   }
 
+  bool startUp = false;
+
   ThemeMode _themeMode = ThemeMode.system;
   FlexScheme _colorScheme = FlexScheme.flutterDash;
   String _dataPath = '';

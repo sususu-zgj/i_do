@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:i_do/data/config.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
+import 'package:i_do/page/home_page.dart';
 import 'package:i_do/page/splash_page.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -48,12 +49,15 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final setting = context.watch<Setting>();
+
     return MaterialApp(
       title: 'I Do',
       theme:  FlexThemeData.light(scheme: setting.colorScheme),
       darkTheme:  FlexThemeData.dark(scheme: setting.colorScheme),
       themeMode: setting.themeMode,
-      home: const SplashPage(),
+      home: !setting.startUp && setting.enableStartUpAnimation
+      ? const SplashPage()
+      : const HomePage()
     );
   }
 }

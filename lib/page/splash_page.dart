@@ -17,7 +17,6 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    if (!Setting().enableStartUpAnimation) return;
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       reverseDuration: const Duration(milliseconds: 500),
@@ -33,19 +32,18 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
+      Setting().startUp = true;
     });
   }
 
   @override
   void dispose() {
-    if (Setting().enableStartUpAnimation) _controller.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!Setting().enableStartUpAnimation) return const HomePage();
-
     final now = DateTime.now();
     final weekday = DateFormat('EEEE').format(now); // 英文星期几
     final dayStr = DateFormat('dd').format(now);

@@ -47,6 +47,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
 
     _controller.forward();
+    Setting().startUp = true;
   }
 
   @override
