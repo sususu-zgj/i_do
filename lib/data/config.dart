@@ -207,7 +207,7 @@ class Setting extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   FlexScheme _colorScheme = FlexScheme.flutterDash;
   String _dataPath = '';
-  String _startUpSentence = 'Hello! {<weekday>}!\n{<year>}\/{<month>}\/{<day>}';
+  String _startUpSentence = 'Hello! {<weekday>}!\n{<year>}/{<month>}/{<day>}';
   bool _enableAnimations = true;
   bool _savePop = true;
   bool _enableStartUpAnimation = true;
@@ -325,7 +325,7 @@ class Setting extends ChangeNotifier {
         : '';
     _startUpSentence = map['startUpSentence'] is String 
         ? map['startUpSentence'] as String 
-        : '';
+        : _startUpSentence;
     _enableAnimations = map['enableAnimations'] is bool 
         ? map['enableAnimations'] as bool 
         : _enableAnimations;
