@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:i_do/data/home_data_.dart';
-import 'package:i_do/data/setting.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:provider/provider.dart';
 
@@ -12,15 +11,15 @@ class HomePageDrawer extends StatefulWidget {
 }
 
 class _HomePageDrawerState extends State<HomePageDrawer> {
-  HomeData? _homeData;
+  AppConfig? _homeData;
   Setting? _setting;
-  HomeData get data => _homeData!;
+  AppConfig get data => _homeData!;
   Setting get setting => _setting!;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _homeData ??= context.watch<HomeData>();
+    _homeData ??= context.watch<AppConfig>();
     _setting ??= context.watch<Setting>();
   }
 
@@ -84,20 +83,6 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
           },
         ),
         SwitchListTile(
-          title: const Text('Show Date'),
-          value: data.isDateShown,
-          onChanged: (value) {
-            data.isDateShown = value;
-          },
-        ),
-        SwitchListTile(
-          title: const Text('Show Tags'),
-          value: data.isTagShown,
-          onChanged: (value) {
-            data.isTagShown = value;
-          },
-        ),
-        SwitchListTile(
           title: const Text('Toggle Finish'),
           value: data.isToggleFinish,
           onChanged: (value) {
@@ -133,6 +118,42 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
     );
   }
 
+  Widget _buildStarTile() {
+    final colorScheme = Theme.of(context).colorScheme; 
+    final tileTextStyle = TextStyle(color: colorScheme.primary);
+
+    return ListTile(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Stared', style: tileTextStyle,),
+          const SizedBox(width: 8),
+          const Icon(Icons.star),
+        ],
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {},
+    );
+  }
+
+  Widget _buildTaskTile() {
+    final colorScheme = Theme.of(context).colorScheme; 
+    final tileTextStyle = TextStyle(color: colorScheme.primary);
+    
+    return ListTile(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('Event', style: tileTextStyle,),
+          SizedBox(width: 8),
+          const Icon(Icons.event_note),
+        ],
+      ),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () {},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     
@@ -144,6 +165,8 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
           const Divider(height: 0,),
           _buildOptions(),
           _buildTagsTile(),
+          _buildStarTile(),
+          _buildTaskTile(),
         ],
       ),
     );

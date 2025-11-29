@@ -1,6 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:i_do/data/setting.dart';
+import 'package:i_do/data/config.dart';
+import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -8,15 +9,7 @@ class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
   static final PageStorageBucket _bucket = PageStorageBucket();
 
-  static const List<FlexScheme> schemes = [
-    FlexScheme.flutterDash,
-    FlexScheme.blue,
-    FlexScheme.green,
-    FlexScheme.shadGreen,
-    FlexScheme.mandyRed,
-    FlexScheme.blackWhite,
-    FlexScheme.shadStone,
-  ];
+  static List<FlexScheme> get schemes => IDoAPI.schemes; 
 
   @override
   State<SettingPage> createState() => _SettingPageState();
@@ -24,6 +17,8 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   late PageController _pageController;
+  late TextEditingController _textEditingController;
+  late FocusNode _sentenceFocusNode;
   Setting? _setting;
 
   Setting get setting => _setting!;
@@ -42,6 +37,13 @@ class _SettingPageState extends State<SettingPage> {
       initialPage: initialIndex < 0 ? 0 : initialIndex,
       viewportFraction: 0.28,
     );
+    _textEditingController = TextEditingController(text: Setting().startUpSentence);
+    _sentenceFocusNode = FocusNode();
+    _sentenceFocusNode.addListener(() {
+      if (!_sentenceFocusNode.hasFocus) {
+        setting.startUpSentence = _textEditingController.text;
+      }
+    });
   }
 
   @override
@@ -141,6 +143,39 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  Widget _buildStartUpSentenceTile(BuildContext context) {
+    return ExpansionTile(
+      key: const PageStorageKey('start_up_sentence_tile'),
+      title: const Text('Start Up Sentence'),
+      children: [
+        Container(
+          height: 150,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            key: const PageStorageKey('start_up_sentence_textfield'),
+            minLines: null,
+            maxLines: null,
+            expands: true,
+            focusNode: _sentenceFocusNode,
+            controller: _textEditingController,
+            decoration: const InputDecoration(
+              hintText: 'Try {<weekday/day/month/year>}',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStartUpAnimationTile(BuildContext context) {
+    final setting = Setting();
+    return SwitchListTile(
+      title: const Text('Enable Start Up Animation'),
+      value: setting.enableStartUpAnimation == true,
+      onChanged: (v) => setting.enableStartUpAnimation = v,
+    );
+  }
+
   Widget _buildAnimationTile(BuildContext context) {
     final setting = Setting();
     return SwitchListTile(
@@ -169,6 +204,8 @@ class _SettingPageState extends State<SettingPage> {
           key: const PageStorageKey('settings'),
           children: [
             _buildThemeColorTile(context),
+            _buildStartUpSentenceTile(context),
+            _buildStartUpAnimationTile(context),
             _buildAnimationTile(context),
             _buildSavePopTile(context),
           ],

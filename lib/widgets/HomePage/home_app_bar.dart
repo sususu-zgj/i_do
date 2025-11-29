@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:i_do/data/home_data_.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
@@ -16,15 +16,15 @@ class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _HomeAppBarState extends State<HomeAppBar> {
-  HomeData? _homeData;
+  AppConfig? _homeData;
   Searcher? _searcher;
-  HomeData get data => _homeData!;
+  AppConfig get data => _homeData!;
   Searcher get searcher => _searcher!;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _homeData ??= context.watch<HomeData>();
+    _homeData ??= context.watch<AppConfig>();
     _searcher ??= context.watch<Searcher>();
   }
 
@@ -64,15 +64,15 @@ class _HomeAppBarState extends State<HomeAppBar> {
           onSelected: (value) => data.sortMode = value,
           itemBuilder: (context) => [
             const PopupMenuItem<int>(
-              value: HomeData.SORT_DEFAULT,
+              value: AppConfig.SORT_DEFAULT,
               child: Text('Default'),
             ),
             const PopupMenuItem<int>(
-              value: HomeData.SORT_TITLE,
+              value: AppConfig.SORT_TITLE,
               child: Text('Sort by Title'),
             ),
             const PopupMenuItem<int>(
-              value: HomeData.SORT_DATE,
+              value: AppConfig.SORT_DATE,
               child: Text('Sort by Date'),
             ),
           ],

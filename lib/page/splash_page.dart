@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/page/home_page.dart';
 import 'package:intl/intl.dart';
 
@@ -16,6 +17,7 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+    if (!Setting().enableStartUpAnimation) return;
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       reverseDuration: const Duration(milliseconds: 500),
@@ -36,15 +38,25 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (Setting().enableStartUpAnimation) _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!Setting().enableStartUpAnimation) return const HomePage();
+
     final now = DateTime.now();
     final weekday = DateFormat('EEEE').format(now); // 英文星期几
-    final dateStr = DateFormat('yyyy/MM/dd').format(now);
+    final dayStr = DateFormat('dd').format(now);
+    final monthStr = DateFormat('MM').format(now);
+    final yearStr = DateFormat('yyyy').format(now);
+    String sentence = Setting().startUpSentence
+        .replaceAll(RegExp(r'\{<weekday>\}'), weekday)
+        .replaceAll(RegExp(r'\{<day>\}'), dayStr)
+        .replaceAll(RegExp(r'\{<month>\}'), monthStr)
+        .replaceAll(RegExp(r'\{<year>\}'), yearStr);
+    final sentences = sentence.split('\n');
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -54,15 +66,23 @@ class _SplashPageState extends State<SplashPage> with SingleTickerProviderStateM
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (sentences.isNotEmpty)
               Text(
-                'Hello! $weekday',
+                sentences.first,
                 style: Theme.of(context).textTheme.headlineMedium,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.fade,
               ),
-              const SizedBox(height: 16),
-              Text(
-                dateStr,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              if (sentences.length > 1)
+                ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    sentences.sublist(1).join('\n'),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.fade,
+                  ),
+                ]
             ],
           ),
         ),

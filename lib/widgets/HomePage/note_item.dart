@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:i_do/data/home_data_.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
 
@@ -12,11 +12,8 @@ class NoteItem extends StatelessWidget {
     this.shape,
     this.animated = false,
     required this.note,
-    required this.leadingShown,
-    required this.trailingShown,
+    required this.selecting,
     required this.selected,
-    required this.dateShown,
-    required this.tagsShown,
     required this.toggleFinish,
     this.onSelect,
     this.onTap,
@@ -32,11 +29,8 @@ class NoteItem extends StatelessWidget {
   final bool animated;
 
   final Note note;
-  final bool leadingShown;
-  final bool trailingShown;
+  final bool selecting;
   final bool selected;
-  final bool dateShown;
-  final bool tagsShown;
   final bool toggleFinish;
 
   final void Function(bool?)? onSelect;
@@ -49,7 +43,7 @@ class NoteItem extends StatelessWidget {
     return Text(
       note.title,
       overflow: TextOverflow.ellipsis,
-      maxLines: HomeData().columnsCount == 1 ? 1 : 3,
+      maxLines: AppConfig().columnsCount == 1 ? 1 : 3,
     );
   }
 
@@ -59,20 +53,18 @@ class NoteItem extends StatelessWidget {
       width: 40,
       child: IDoAPI.buildASWidget(
         child: note.isFinished
-          ? toggleFinish && trailingShown 
+          ? toggleFinish && !selecting 
             ? IconButton(key: const ValueKey('check'), onPressed: onFinish, icon: const Icon(Icons.check)) 
             : const Icon(Icons.check, key: ValueKey('check'),)
-          : toggleFinish && trailingShown
+          : toggleFinish && !selecting
             ? IconButton(key: const ValueKey('circle'), onPressed: onFinish, icon: const Icon(Icons.circle_outlined)) 
             : const SizedBox.shrink(),
       ),
     );
   }
 
-  Widget? _buildSubTitle(BuildContext context) {
-    if (!dateShown && !tagsShown) return null;
-
-    bool vertical = HomeData().columnsCount != 1;
+  Widget _buildSubTitle(BuildContext context) {
+    bool vertical = AppConfig().columnsCount != 1;
 
     final theme = Theme.of(context);
     final tagColor = theme.colorScheme.primary;
@@ -80,22 +72,18 @@ class NoteItem extends StatelessWidget {
     List<InlineSpan> spans = [];
 
     // 日期
-    if (dateShown) {
-      spans.add(
-        TextSpan(
-          text: '${note.dateTime.year}-${note.dateTime.month}-${note.dateTime.day}',
-          style: theme.textTheme.bodyMedium?.copyWith(color: foregroundColor),
-        ),
-      );
-    }
+    spans.add(
+      TextSpan(
+        text: '${note.dateTime.year}-${note.dateTime.month}-${note.dateTime.day}',
+        style: theme.textTheme.bodyMedium?.copyWith(color: foregroundColor),
+      ),
+    );
 
     // 间隔
-    if (dateShown && tagsShown && note.tags.isNotEmpty) {
-      spans.add(vertical ? const TextSpan(text: '\n') : const TextSpan(text: '   '));
-    }
+    vertical ? spans.add(const TextSpan(text: '\n')) : spans.add(const TextSpan(text: '   '));
 
     // 标签
-    if (tagsShown && note.tags.isNotEmpty) {
+    if ( note.tags.isNotEmpty) {
       for (int i = 0; i < note.tags.length; i++) {
         spans.add(
           TextSpan(
@@ -114,31 +102,45 @@ class NoteItem extends StatelessWidget {
         }
       }
     }
-
-    if (vertical) {
-      return RichText(
-        overflow: TextOverflow.clip,
-        maxLines: null,
-        text: TextSpan(
-          children: spans,
+    else {
+      spans.add(
+        TextSpan(
+          text: 'No Tags',
+          style: theme.textTheme.bodyMedium?.copyWith(color: foregroundColor?.withValues(alpha: 0.6)),
         ),
       );
     }
 
-    return SizedBox(
-      height: 28,
-      child: RichText(
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        text: TextSpan(
-          children: spans,
-        ),
-      ),
-    );
+    Widget subtitle = vertical 
+        ? RichText(
+            overflow: TextOverflow.clip,
+            maxLines: null,
+            text: TextSpan(
+              children: spans,
+            ),
+          ) 
+        : SizedBox(
+            height: 28,
+            child: RichText(
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              text: TextSpan(
+                children: spans,
+              ),
+            ),
+          );
+
+    return subtitle;
   }
 
   Widget _buildOption() {
-    return PopupMenuButton<int>(
+    return selecting 
+    ? SizedBox(
+      height: 40,
+      width: 40,
+      child: Icon(Icons.more_vert),
+    )
+    : PopupMenuButton<int>(
       onSelected: (value) {
         switch (value) {
           case 1:
@@ -171,35 +173,71 @@ class NoteItem extends StatelessWidget {
     );
   }
 
+  Widget _buildStar() {
+    return SizedBox(
+      height: 40,
+      width: 40,
+      child: Icon(Icons.star)
+    );
+  }
+
   Widget _buildItemHorinize(BuildContext context) {
-    return ListTile(
-      title: Row(
-        children: [
-          Expanded(child: _bulidTitle()),
-          _buildFinishIcon(),
-        ],
-      ),
-      subtitle: _buildSubTitle(context),
-      trailing: trailingShown ? _buildOption() : null,
-      onTap: onTap,
-      onLongPress: onLongPress,
-      shape: shape,
+    return Stack(
+      children: [
+        ListTile(
+          title: Row(
+            children: [
+              Expanded(child: _bulidTitle()),
+              _buildFinishIcon(),
+              const SizedBox(width: 8),
+            ],
+          ),
+          subtitle: _buildSubTitle(context),
+          onTap: onTap,
+          onLongPress: onLongPress,
+          shape: shape,
+        ),
+        Positioned(
+          right: 0,
+          child: Column(
+            children: [
+              _buildStar(),
+              _buildOption(),
+            ],
+          ),
+        )
+      ],
     );
   }
 
   Widget _buildItemVertical(BuildContext context) {
-    return ListTile(
-      title: _bulidTitle(),
-      subtitle: _buildSubTitle(context),
-      onTap: onTap,
-      onLongPress: onLongPress,
-      shape: shape,
+    return Stack(
+      children: [
+        ListTile(
+          title: _bulidTitle(),
+          subtitle: _buildSubTitle(context),
+          onTap: onTap,
+          onLongPress: onLongPress,
+          shape: shape,
+        ),
+        Positioned(
+          right: 0,
+          top: 0,
+          child: Column(
+            children: [
+              _buildFinishIcon(),
+              //_buildStar(),
+              _buildOption(),
+            ],
+          ),
+        )
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final columnCount = HomeData().columnsCount;
+    final columnCount = AppConfig().columnsCount;
     bool vertical = columnCount != 1;
     
     return CardTheme(

@@ -2,10 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:i_do/data/home_data_.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
-import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/widgets/HomePage/home_app_bar.dart';
 import 'package:i_do/widgets/HomePage/home_page_drawer.dart';
@@ -23,12 +22,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   // 数据
   bool isSelecting = false;
   Noter? _noter;
-  HomeData? _homeData;
+  AppConfig? _homeData;
   Searcher? _searcher;
   final List<Note> selectedNotes = [];
 
   Noter get noter => _noter!;
-  HomeData get homeData => _homeData!;
+  AppConfig get homeData => _homeData!;
   Searcher get searcher => _searcher!;
 
   // 动画
@@ -61,7 +60,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     super.didChangeDependencies();
     _noter ??= context.watch<Noter>();
     _searcher ??= context.watch<Searcher>();
-    _homeData ??= context.watch<HomeData>();
+    _homeData ??= context.watch<AppConfig>();
   }
 
   Widget? _buildFloatingActionButton() {
@@ -146,11 +145,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       return false;
     }).toList();
     switch (homeData.sortMode) {
-      case HomeData.SORT_TITLE:
+      case AppConfig.SORT_TITLE:
         notes.sort((a, b) => a.title.compareTo(b.title) * (homeData.isSortReverse ? -1 : 1));
-      case HomeData.SORT_DATE:
+      case AppConfig.SORT_DATE:
         notes.sort((a, b) => b.dateTime.compareTo(a.dateTime) * (homeData.isSortReverse ? -1 : 1));
-      case HomeData.SORT_DEFAULT:
+      case AppConfig.SORT_DEFAULT:
         if (homeData.isSortReverse) {
           notes = notes.reversed.toList();
         }
@@ -211,10 +210,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             elevation: elevation,
             shape: shape,
             animated: animated,
-            leadingShown: isSelecting,
-            trailingShown: !isSelecting,
-            dateShown: homeData.isDateShown,
-            tagsShown: homeData.isTagShown,
+            selecting: isSelecting,
             toggleFinish: homeData.isToggleFinish,
             selected: selected,
             onSelect: (select) => _onNoteSelect(select, note),

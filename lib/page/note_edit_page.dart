@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:i_do/data/config.dart';
 import 'package:i_do/data/edit_data.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
-import 'package:i_do/data/setting.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/page/tag_create_dialog.dart';
 import 'package:i_do/widgets/base_theme_widget.dart';
@@ -232,6 +232,8 @@ class _NoteEditPageState extends State<NoteEditPage> {
       );
     }
   }
+
+  
 }
 
 class _EDrawer extends StatefulWidget {
