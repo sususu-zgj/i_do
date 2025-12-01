@@ -33,7 +33,7 @@ class Searcher extends ChangeNotifier {
 
   void load(NoteData noteData) {
     _noteData = noteData;
-    _results = _noteData.notes;
+    search();
     notifyListeners();
   }
 
