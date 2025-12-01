@@ -3,4 +3,5 @@ analyzer:
   errors:
     constant_identifier_names: ignore
     file_names: ignore
+    unnecessary_string_escapes: ignore
     use_build_context_synchronously: ignore
