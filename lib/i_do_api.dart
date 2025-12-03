@@ -18,10 +18,6 @@ import 'package:provider/provider.dart';
 class IDoAPI {
   IDoAPI._();
 
-  static double appBarElevation = 0.55;
-
-  static double cardElevation = 2.5;
-
   static const List<FlexScheme> schemes = [
     FlexScheme.flutterDash,
     FlexScheme.blue,
@@ -31,6 +27,11 @@ class IDoAPI {
     FlexScheme.blackWhite,
     FlexScheme.shadStone,
   ];
+
+  static Color cardColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return colorScheme.surfaceContainer;
+  }
 
   static void showSnackBar({ 
     required BuildContext context,
@@ -124,8 +125,9 @@ class IDoAPI {
     );
   }
 
-  static Widget buildGlassWidget({required Widget child, double blurSigma = 12}) {
-    return ClipRect(
+  static Widget buildGlassWidget({required Widget child, double blurSigma = 8, BorderRadiusGeometry borderRadius = BorderRadius.zero}) {
+    return ClipRRect(
+      borderRadius: borderRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
         child: child

@@ -7,7 +7,8 @@ import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/page/tag_create_dialog.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_drawer.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
@@ -106,8 +107,9 @@ class _NoteEditPageState extends State<NoteEditPage> {
   }
 
   Widget _buildBody() {
+    final cardColor = IDoAPI.cardColor(context);
     return Card(
-      elevation: IDoAPI.cardElevation,
+      color: cardColor,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Form(
@@ -149,27 +151,49 @@ class _NoteEditPageState extends State<NoteEditPage> {
   }
 
   Widget _buildBottom() {
+    final cardColor = IDoAPI.cardColor(context);
+    final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      overflow: TextOverflow.ellipsis,
+    );
+    final padding = const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8);
+    final borderRadius = BorderRadius.circular(12.0);
+    final shape = RoundedRectangleBorder(
+      borderRadius: borderRadius,
+    );
+
     return Row(
       children: [
         Expanded(
           child: Card(
-            elevation: IDoAPI.cardElevation,
-            child: TextButton(
-              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              child: Text(
-                _tags.isNotEmpty ? 'Tags: #${_tags.join(' #')}' : 'Add Tag',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                softWrap: false,
-              )
+            shape: shape,
+            color: cardColor,
+            child: InkWell(
+              borderRadius: borderRadius,
+              onTap: () => _scaffoldKey.currentState?.openDrawer(),
+              child: Padding(
+                padding: padding,
+                child: Text(
+                  _tags.isNotEmpty ? 'Tags: #${_tags.join(' #')}' : 'Add Tag',
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: textStyle,
+                  softWrap: false,
+                ),
+              ),
             ),
           ),
         ),
         Card(
-          elevation: IDoAPI.cardElevation,
-          child: TextButton(
-            onPressed: _saveNote, 
-            child: const Text('Save')
+          shape: shape,
+          color: cardColor,
+          child: InkWell(
+            borderRadius: borderRadius,
+            onTap: _saveNote,
+            child: Padding(
+              padding: padding,
+              child: Text('Save', textAlign: TextAlign.center, style: textStyle,),
+            ),
           ),
         )
       ],
@@ -216,6 +240,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
     final valid = _formKey.currentState?.validate();
     if (valid == true) {
       final title = _titleController.text.trim();
+      bool success = false;
 
       if (note == null) {
         Note newNote = Note(
@@ -226,7 +251,7 @@ class _NoteEditPageState extends State<NoteEditPage> {
           isFinished: _finish,
           isStarred: _starred,
         );
-        Noter().addNote(newNote).then((value) {if(value) Searcher().search();});
+        success = await Noter().addNote(newNote);
       }
       else {
         note!.title = title;
@@ -235,14 +260,23 @@ class _NoteEditPageState extends State<NoteEditPage> {
         note!.dateTime = _dateTime;
         note!.isFinished = _finish;
         note!.isStarred = _starred;
-        Noter().updateNote(note!).then((value) {if(value) Searcher().search();});
+        success = await Noter().updateNote(note!);
       }
       
-      IDoAPI.showSnackBar(
-        context: context, 
-        message: '$title saved',
-      );
-      if (note == null || Setting().savePop) Navigator.of(context).pop();
+      if (success) {
+        Searcher().search();
+        IDoAPI.showSnackBar(
+          context: context, 
+          message: '$title saved',
+        );
+        if (note == null || Setting().savePop) Navigator.of(context).pop();
+      }
+      else {
+        IDoAPI.showSnackBar(
+          context: context, 
+          message: 'Failed to save $title',
+        );
+      }
     }
     else {
       IDoAPI.showSnackBar(
@@ -424,7 +458,7 @@ class _EDrawerState extends State<_EDrawer> {
               final selected = _tags.contains(tag);
 
               return Card(
-                color: selected ? selectedColor : colorScheme.surfaceBright,
+                color: selected ? selectedColor : IDoAPI.cardColor(context),
                 elevation: selected ? 8 : 2,
                 shape: shape.copyWith(
                   side: isDark ? BorderSide(
@@ -469,7 +503,7 @@ class _EDrawerState extends State<_EDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
+    return BaseThemeDrawer(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(

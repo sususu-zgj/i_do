@@ -2,7 +2,7 @@ import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:i_do/data/config.dart';
 import 'package:i_do/i_do_api.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
 import 'package:provider/provider.dart';
 
 class SettingPage extends StatefulWidget {
@@ -19,6 +19,7 @@ class _SettingPageState extends State<SettingPage> {
   late PageController _pageController;
   late TextEditingController _textEditingController;
   late FocusNode _sentenceFocusNode;
+  FlexScheme colorScheme = Setting().colorScheme;
   Setting? _setting;
 
   Setting get setting => _setting!;
@@ -53,15 +54,47 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildThemeColorTile(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final primaryColor = colorScheme.colors(theme.brightness).primary;
     return ExpansionTile(
       key: const PageStorageKey('theme_color_tile'),
-      title: Text('Theme Color'),
-      subtitle: Text(
-        setting.colorScheme.name.capitalize,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.primary,
+      title: SizedBox(
+        height: 40,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Theme Color'),
+            IDoAPI.buildASWidget(
+              child: setting.colorScheme != colorScheme 
+              ? TextButton(
+                key: ValueKey('apply_color_${colorScheme.name}'),
+                onPressed: () {
+                  setting.colorScheme = colorScheme;
+                },
+                child: Text('Apply', style: textTheme.bodyMedium?.copyWith(color: primaryColor),),
+              )
+              : const SizedBox(),
+            )
+          ],
         ),
+      ),
+      subtitle: Row( // 加一层Row防止AnimatedSwitcher使Text错位
+        children: [
+          IDoAPI.buildASWidget(
+            child: SizedBox(
+              key: ValueKey('apply_color_${colorScheme.name}'),
+              width: 100,
+              child: Text(
+                colorScheme.name.capitalize,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       children: [
         _colorPicker()
@@ -70,7 +103,7 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _colorPicker() {
-    final selectedIndex = SettingPage.schemes.indexOf(setting.colorScheme);
+    final selectedIndex = SettingPage.schemes.indexOf(colorScheme);
     return Column(
       children: [
         SizedBox(
@@ -82,7 +115,7 @@ class _SettingPageState extends State<SettingPage> {
             physics: const BouncingScrollPhysics(),
             onPageChanged: (index) {
               setState(() {
-                setting.colorScheme = SettingPage.schemes[index];
+                colorScheme = SettingPage.schemes[index];
               });
             },
             itemBuilder: (context, index) {
@@ -131,7 +164,7 @@ class _SettingPageState extends State<SettingPage> {
               height: 8,
               decoration: BoxDecoration(
                 color: active
-                    ? Theme.of(context).colorScheme.primary
+                    ? colorScheme.colors(Theme.of(context).brightness).primary
                     : Theme.of(context).colorScheme.outlineVariant,
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -242,8 +275,8 @@ class _ColorItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: selected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                ? color
+                : color.withValues(alpha: 0.4),
             width: selected ? 4 : 2,
           ),
           gradient: LinearGradient(

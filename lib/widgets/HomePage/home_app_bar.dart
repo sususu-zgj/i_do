@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:i_do/data/config.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/i_do_api.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
 import 'package:provider/provider.dart';
 
 class HomeAppBar extends StatefulWidget implements PreferredSizeWidget {

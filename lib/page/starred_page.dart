@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
 import 'package:i_do/widgets/no_note_here.dart';
 import 'package:provider/provider.dart';
 
@@ -25,7 +25,7 @@ class _StarredPageState extends State<StarredPage> {
     super.didChangeDependencies();
     if (_noter != null) return;
     _noter ??= context.watch<Noter>();
-    notes = noter.notes.where((note) => note.isStarred).toList();
+    notes = noter.notes.where((note) => note.isStarred && !note.isDeleted).toList();
     
   }
 
@@ -101,7 +101,7 @@ class _StarredPageState extends State<StarredPage> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: _buildAppBar(),
-      body: selectedNotes.isEmpty 
+      body: notes.isEmpty 
           ? const NoNoteHere(
             icon: Icon(Icons.star_border_outlined),
             message: Text('No Starred Notes Yet'),
@@ -145,8 +145,8 @@ class _StarredPageState extends State<StarredPage> {
     for (var note in selectedNotes) {
       note.isStarred = false;
     }
-    selectedNotes.clear();
     noter.updateNotes(selectedNotes);
+    selectedNotes.clear();
   }
 }
 

@@ -167,9 +167,10 @@ class NoteItem extends StatelessWidget {
     ? SizedBox(
       height: 40,
       width: 40,
-      child: Icon(Icons.more_vert),
+      child: Icon(Icons.more_vert, color: foregroundColor,),
     )
     : PopupMenuButton<int>(
+      color: foregroundColor,
       onSelected: (value) {
         switch (value) {
           case 1:
@@ -304,7 +305,6 @@ class NoteItem extends StatelessWidget {
         child: Card(
           child: IDoAPI.buildAnimatedContainer(
             decoration: BoxDecoration(
-              color: backgroundColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: columnCount == 1 ? _buildItemHorinize(context) : _buildItemVertical(context),

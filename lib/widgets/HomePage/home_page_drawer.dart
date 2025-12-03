@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:i_do/data/config.dart';
 import 'package:i_do/i_do_api.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_drawer.dart';
 import 'package:provider/provider.dart';
 
 class HomePageDrawer extends StatefulWidget {
@@ -59,14 +60,8 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
 
     return ExpansionTile(
       key: const PageStorageKey('home_options'),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Options', style: tileTextStyle,),
-          const SizedBox(width: 8),
-          Icon(Icons.tune),
-        ],
-      ),
+      title: Text('Options', style: tileTextStyle,),
+      trailing: const Icon(Icons.tune),
       children: [
         SwitchListTile(
           title: const Text('Floating Edit Button'),
@@ -112,15 +107,8 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
     final tileTextStyle = TextStyle(color: colorScheme.primary);
 
     return ListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Tags', style: tileTextStyle,),
-          const SizedBox(width: 8),
-          Icon(Icons.label),
-        ],
-      ),
-      trailing: const Icon(Icons.chevron_right),
+      title: Text('Tags', style: tileTextStyle,),
+      trailing: const Icon(Icons.label),
       onTap: () => IDoAPI.openTagsPage(context),
     );
   }
@@ -130,15 +118,8 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
     final tileTextStyle = TextStyle(color: colorScheme.primary);
 
     return ListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Stared', style: tileTextStyle,),
-          const SizedBox(width: 8),
-          const Icon(Icons.star),
-        ],
-      ),
-      trailing: const Icon(Icons.chevron_right),
+      title: Text('Stared', style: tileTextStyle,),
+      trailing: const Icon(Icons.star),
       onTap: () {
         IDoAPI.openStarredPage(context);
       },
@@ -150,15 +131,8 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
     final tileTextStyle = TextStyle(color: colorScheme.primary);
     
     return ListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Event', style: tileTextStyle,),
-          SizedBox(width: 8),
-          const Icon(Icons.event_note),
-        ],
-      ),
-      trailing: const Icon(Icons.chevron_right),
+      title: Text('Event', style: tileTextStyle,),
+      trailing: const Icon(Icons.event_note),
       onTap: () {},
     );
   }
@@ -166,7 +140,7 @@ class _HomePageDrawerState extends State<HomePageDrawer> {
   @override
   Widget build(BuildContext context) {
     
-    return Drawer(
+    return BaseThemeDrawer(
       child: ListView(
         key: const PageStorageKey('home_drawer'),
         children: [

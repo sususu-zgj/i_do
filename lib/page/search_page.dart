@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
 import 'package:i_do/widgets/scroll_select_wrap.dart';
 
 ///
@@ -332,23 +332,6 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
-  // 搜索回调
-  void _search() {
-    final filter = SearchFilter(
-      id: '',
-      title: title.trim(),
-      tags: tags,
-      blackTags: blackTags,
-      year: year,
-      month: month,
-      day: day,
-      titleStrict: titleStrict,
-      tagStrict: tagStrict,
-    );
-    Searcher().byFilter(null, filter);
-    Navigator.pop(context);
-  }
-
   // 搜索选项
   List<Widget> _searchOptions() {
     return [
@@ -440,14 +423,18 @@ class _SearchPageState extends State<SearchPage> {
           if (year != -1 || month != -1 || day != -1)
             SizedBox(
               height: 24,
-              child: TextButton.icon(
+              child: TextButton(
                 onPressed: () {
                   setState(() {
                     year = month = day = -1;
                   });
                 },
-                icon: Icon(Icons.clear, size: 18),
-                label: Text('Clear'),
+                child: Row(
+                  children: [
+                    Icon(Icons.clear, size: 18),
+                    Text('Clear'),
+                  ],
+                ),
               ),
             ),
         ],
@@ -548,6 +535,22 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  // 搜索回调
+  void _search() {
+    final filter = SearchFilter(
+      id: '',
+      title: title.trim(),
+      tags: tags,
+      blackTags: blackTags,
+      year: year,
+      month: month,
+      day: day,
+      titleStrict: titleStrict,
+      tagStrict: tagStrict,
+    );
+    Searcher().byFilter(null, filter);
+    Navigator.pop(context);
+  }
 }
 
 class SelectTagDialog extends StatefulWidget {

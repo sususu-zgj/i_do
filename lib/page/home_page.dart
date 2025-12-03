@@ -6,6 +6,7 @@ import 'package:i_do/data/config.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/data/searcher.dart';
 import 'package:i_do/i_do_api.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_floating_action_button.dart';
 import 'package:i_do/widgets/HomePage/home_app_bar.dart';
 import 'package:i_do/widgets/HomePage/home_page_drawer.dart';
 import 'package:i_do/widgets/HomePage/note_item.dart';
@@ -66,97 +67,105 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget? _buildFloatingActionButton() {
-    return homeData.isEditButtonFloating ? GestureDetector(
+    if (!homeData.isEditButtonFloating) return null;
+    return BaseThemeFloatingActionButton(
       onLongPress: () => homeData.isEditButtonFloating = false,
-      child: FloatingActionButton(
-        onPressed: () => IDoAPI.openEditPage(context),
-        tooltip: 'Create Note',
-        child: const Icon(Icons.edit),
-      ),
-    ) : null;
+      onPressed: () => IDoAPI.openEditPage(context),
+      tooltip: 'Create Note',
+      child: const Icon(Icons.edit),
+    );
   }
 
   Widget _buildSelectBar() {
-    final color = Theme.of(context).colorScheme.surfaceContainer;
-    return Container(
-      height: 40,
-      color: color,
-      child: Row(
-        children: [
-          SizedBox(width: 8),
-          Text('${selectedNotes.length} selected'),
-          TextButton(
-            onPressed: _onSelectAll,
-            child: Text('Select All'),
-          ),
-          TextButton(
-            onPressed: _onNotesDelete,
-            child: Text('Delete'),
-          ),
-          Expanded(child: SizedBox.expand()),
-          PopupMenuButton<int>(
-            onSelected: (value) {
-              switch (value) {
-                case 0:
-                  for (var note in selectedNotes) {
-                    note.isFinished = true;
-                  }
-                  Noter().updateNotes(selectedNotes, reclassify: false);
-                  break;
-                case 1:
-                  for (var note in selectedNotes) {
-                    note.isFinished = false;
-                  }
-                  Noter().updateNotes(selectedNotes, reclassify: false);
-                  break;
-                case 2:
-                  for (var note in selectedNotes) {
-                    note.isStarred = true;
-                  }
-                  Noter().updateNotes(selectedNotes, reclassify: false);
-                  break;
-                case 3:
-                  for (var note in selectedNotes) {
-                    note.isStarred = false;
-                  }
-                  Noter().updateNotes(selectedNotes, reclassify: false);
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem<int>(
-                value: 0,
-                child: Text('Finish'),
-              ),
-              const PopupMenuItem<int>(
-                value: 1,
-                child: Text('Unfinish'),
-              ),
-              const PopupMenuItem<int>(
-                value: 2,
-                child: Text('Star'),
-              ),
-              const PopupMenuItem<int>(
-                value: 3,
-                child: Text('Unstar'),
-              ),
-            ],
-          ),
-          IconButton(
-            icon: Icon(Icons.close),
-            onPressed: () => setState(() {
-              isSelecting = false;
-              selectedNotes.clear();
-            }),
-          ),
-        ],
+    final color = Theme.of(context).colorScheme.surfaceBright.withValues(alpha: 0.75);
+    return IDoAPI.buildGlassWidget(
+      child: Container(
+        height: 40,
+        color: color,
+        child: Row(
+          children: [
+            const SizedBox(width: 8),
+            Text('${selectedNotes.length} selected'),
+            TextButton(
+              onPressed: _onSelectAll,
+              child: const Text('Select All'),
+            ),
+            TextButton(
+              onPressed: _onNotesDelete,
+              child: const Text('Delete'),
+            ),
+            Expanded(child: SizedBox.expand()),
+            PopupMenuButton<int>(
+              onSelected: (value) {
+                switch (value) {
+                  case 0:
+                    for (var note in selectedNotes) {
+                      note.isFinished = true;
+                    }
+                    Noter().updateNotes(selectedNotes, reclassify: false);
+                    break;
+                  case 1:
+                    for (var note in selectedNotes) {
+                      note.isFinished = false;
+                    }
+                    Noter().updateNotes(selectedNotes, reclassify: false);
+                    break;
+                  case 2:
+                    for (var note in selectedNotes) {
+                      note.isStarred = true;
+                    }
+                    Noter().updateNotes(selectedNotes, reclassify: false);
+                    break;
+                  case 3:
+                    for (var note in selectedNotes) {
+                      note.isStarred = false;
+                    }
+                    Noter().updateNotes(selectedNotes, reclassify: false);
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem<int>(
+                  value: 0,
+                  child: Text('Finish'),
+                ),
+                const PopupMenuItem<int>(
+                  value: 1,
+                  child: Text('Unfinish'),
+                ),
+                const PopupMenuItem<int>(
+                  value: 2,
+                  child: Text('Star'),
+                ),
+                const PopupMenuItem<int>(
+                  value: 3,
+                  child: Text('Unstar'),
+                ),
+              ],
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () => setState(() {
+                isSelecting = false;
+                selectedNotes.clear();
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBody() {
-    if (noter.notes.isEmpty) {
+    final showFinish = homeData.isFinishShown;
+    final showUnfinish = homeData.isUnfinishShown;
+
+    // 筛选
+    List<Note> notes = searcher.results;
+
+    if (notes.isEmpty) {
       return const NoNoteHere(
+        key: ValueKey('no_notes_exist'),
         icon: Icon(Icons.note_alt_outlined),
         message: Column(
           children: [
@@ -168,15 +177,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       );
     }
 
-    final showFinish = homeData.isFinishShown;
-    final showUnfinish = homeData.isUnfinishShown;
-
-    // 筛选
-    List<Note> notes = searcher.results.where((note) {
+    notes = notes.where((note) {
       if (note.isFinished && showFinish) return true;
       if (!note.isFinished && showUnfinish) return true;
       return false;
     }).toList();
+
     switch (homeData.sortMode) {
       case AppConfig.SORT_TITLE:
         notes.sort((a, b) => a.title.compareTo(b.title) * (homeData.isSortReverse ? -1 : 1));
@@ -198,6 +204,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
     if (notes.isEmpty) {
       return const NoNoteHere(
+        key: ValueKey('no_notes_found'),
         icon: Icon(Icons.search_off_outlined),
         message: Text('No notes found.'),
       );
@@ -206,28 +213,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return IDoAPI.buildASWidget(
-      duration: const Duration(milliseconds: 700),
-      reverseDuration: const Duration(milliseconds: 200),
-      transitionBuilder: (child, animation) {
-        return Stack(
-          fit: StackFit.expand,
-          children: [
-            child,
-            AnimatedBuilder(
-              animation: animation,
-              builder: (context, _) {
-                final opacity = 1.0 - animation.value;
-                return IgnorePointer(
-                  child: Container(
-                    color: colorScheme.surface.withValues(alpha: opacity),
-                  ),
-                );
-              },
-            )
-          ],
-        );
-      },
+    return KeyedSubtree(
+      key: ValueKey('${homeData.sortMode}_${homeData.isSortReverse}_${homeData.columnsCount}_$showFinish\_$showUnfinish'),
       child: MasonryGridView.count(
         key: homeData.columnsCount == 1 ? const PageStorageKey('home_note_list') : const PageStorageKey('home_note_grid'),
         crossAxisCount: homeData.columnsCount,
@@ -235,15 +222,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         itemBuilder: (context, index) {
           final note = notes[index];
           final selected = selectedNotes.contains(note);
-          final backgroundColor = selected ? colorScheme.primaryContainer : null;
-          final foregroundColor = selected ? colorScheme.onPrimaryContainer : null;
+          final backgroundColor = selected ? (isDark ? colorScheme.primary : colorScheme.primaryContainer) : IDoAPI.cardColor(context);
+          final foregroundColor = selected ? (isDark ? colorScheme.onPrimary : colorScheme.onPrimaryContainer) : null;
           final elevation = selected ? 6.0 : 2.0;
           final shape = RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
-            side: isDark ? BorderSide(
-              color: selected ? colorScheme.primaryContainer : colorScheme.outline.withValues(alpha: 0.05),
-              width: 1,
-            ) : BorderSide.none,
           );
       
           return NoteItem(
@@ -269,6 +252,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: _blurAnimation,
       builder: (context, child) {
@@ -280,7 +264,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child!,
             if (maskOpacity > 0)
             Container(
-              color: Theme.of(context).colorScheme.surface.withValues(alpha: maskOpacity),
+              color: colorScheme.surface.withValues(alpha: maskOpacity),
             ),
             if (_blurAnimation.value > 0)
               BackdropFilter(
@@ -315,7 +299,30 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               IDoAPI.buildAnimatedPadding(
                 duration: const Duration(milliseconds: 300),
                 padding: isSelecting ? const EdgeInsets.only(top: 40) : EdgeInsets.zero,
-                child: _buildBody(),
+                child: IDoAPI.buildASWidget(
+                  duration: const Duration(milliseconds: 700),
+                  reverseDuration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        child,
+                        AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, _) {
+                            final opacity = 1.0 - animation.value;
+                            return IgnorePointer(
+                              child: Container(
+                                color: colorScheme.surface.withValues(alpha: opacity),
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    );
+                  },
+                  child: _buildBody()
+                ),
               ),
               SafeArea(
                 child: IDoAPI.buildASWidget(

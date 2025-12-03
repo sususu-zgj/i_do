@@ -3,7 +3,8 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:i_do/data/note.dart';
 import 'package:i_do/i_do_api.dart';
 import 'package:i_do/page/tag_create_dialog.dart';
-import 'package:i_do/widgets/base_theme_widget.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_floating_action_button.dart';
+import 'package:i_do/widgets/BaseThemeWidget/base_theme_app_bar.dart';
 import 'package:provider/provider.dart';
 
 class TagsPage extends StatefulWidget {
@@ -204,7 +205,7 @@ class _TagsPageState extends State<TagsPage> {
   }
 
   Widget _buildFAB() {
-    return FloatingActionButton(
+    return BaseThemeFloatingActionButton(
       onPressed: _showCreateDialog,
       tooltip: 'Add tag',
       child: const Icon(Icons.add),
